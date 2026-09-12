@@ -33,6 +33,23 @@ Die Quellen bestehen aus den getrennten Domänen `SX` (soziale Systeme) und `DX`
 - `feature-request-<name>.md` beschreibt jeweils ein abgrenzbares Vorhaben.
 - Neue Annahmen werden als offen markiert, bis sie bestätigt oder umgesetzt sind.
 
+## Markdown-Statussignale
+
+Damit Markdown-Arbeit im Gespräch unmittelbar erkennbar ist, wird eine knappe Kommentarzeile mit genau einem passenden Signal gesendet:
+
+- 🗂️ nach dem vollständigen Lesen von `AGENTS.md`
+- 📖 nach dem Lesen einer anderen Markdown-Datei
+- ✍️ unmittelbar vor dem Erstellen oder Ändern einer Markdown-Datei
+
+Die Signale werden nur verwendet, wenn die jeweilige Aktion tatsächlich stattgefunden hat oder als nächster Schritt unmittelbar bevorsteht.
+
+## Git- und Release-Workflow
+
+- Commit-Nachrichten folgen Conventional Commits, insbesondere `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:` und `build:`. Inkompatible Änderungen kennzeichnen `!` im Typ oder einen `BREAKING CHANGE:`-Footer.
+- Entwicklung ist trunk-orientiert: `main` bleibt integrierbar. Änderungen entstehen auf kleinen, kurzlebigen Branches, werden per Pull Request geprüft und zeitnah nach `main` gemergt.
+- Branches benennen die Absicht, zum Beispiel `feature/focused-graph-canvas`, `fix/wikilink-resolution` oder `chore/tooling`.
+- Semantic Release wird eingeführt, sobald die Anwendung als nutzbare Version veröffentlicht wird. Dann bestimmen Conventional Commits die Versionsstufe und das Changelog: `fix` für Patch, `feat` für Minor, Breaking Changes für Major.
+
 ## Sicherheitsgrenze für spätere Schreibfunktionen
 
 Vorschläge, Entwürfe und Analysen bleiben getrennt von Vault-Dateien. Ein Schreibvorgang braucht stets sichtbare Quellen, Begründung, Vorschau und eine explizite Bestätigung.
