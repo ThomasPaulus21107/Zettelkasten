@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Zettelkasten Interaktion</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header>
+      <p class="eyebrow">Zettelkasten Interaktion · lokaler Lesezugriff</p>
+      <h1>Denklines</h1>
+      <p id="summary">Index wird geladen …</p>
+    </header>
+    <main>
+      <aside class="search-panel">
+        <label for="search">Zettel finden</label>
+        <input id="search" type="search" placeholder="Titel, Alias oder Pfad">
+        <div id="results" aria-live="polite"></div>
+      </aside>
+      <section class="focus-panel" aria-live="polite">
+        <div id="empty-state">
+          <p class="eyebrow">Startpunkt</p>
+          <h2>Wähle einen Zettel</h2>
+          <p>Die Ansicht zeigt anschließend seine direkten, expliziten Verbindungen. Jede Linie benennt ihre Herkunft.</p>
+        </div>
+        <div id="focus" hidden>
+          <p id="vault" class="eyebrow"></p>
+          <h2 id="title"></h2>
+          <p id="path" class="path"></p>
+          <dl id="metadata"></dl>
+          <div class="relationship-header">
+            <h3>Direkte Nachbarschaft</h3>
+            <p id="relationship-count"></p>
+          </div>
+          <div id="relationships"></div>
+        </div>
+      </section>
+    </main>
+    <template id="result-template">
+      <button class="result"><span class="result-title"></span><span class="result-meta"></span></button>
+    </template>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
