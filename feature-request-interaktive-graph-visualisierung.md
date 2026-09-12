@@ -21,7 +21,8 @@ Eine lokale, interaktive Landkarte der Zettel schaffen. Sie nimmt Obsidian Graph
 - Kanten aus Wiki-Links und `related` anzeigen und klar als explizite, kuratierte Beziehungen kennzeichnen.
 - Knoten nach Vault, Area, Tag, Typ und Status filterbar machen.
 - Suche nach Titel, Alias und Pfad; Auswahl zentriert die lokale Nachbarschaft.
-- Zoom, Verschieben und schrittweise Erweiterung der Nachbarschaft anbieten.
+- Fokus-Canvas mit ausgewähltem Zettel im Zentrum und direkten Nachbarn als klickbare Knoten anzeigen.
+- Zoom, Verschieben und Zurücksetzen der Canvas-Ansicht anbieten.
 - Fehlende Linkziele sichtbar machen, aber nie automatisch korrigieren.
 - Details zu einem Knoten zeigen: Titel, Vault, Pfad, Metadaten und Beziehungen.
 
@@ -45,4 +46,4 @@ Festzulegen ist, ob der erste Startzustand getrennte SX-/DX-Landkarten oder eine
 
 ## Erstes Increment
 
-Ein lokaler, read-only Indexer erstellt aus konfigurierten Vault-Pfaden einen Graphen. Eine schlanke Browseroberfläche bietet Suche, Knotendetails und eine fokussierte direkte Nachbarschaft. Die Vollansicht, Strukturkanten aus Tags und Areas sowie semantische Ähnlichkeit folgen erst später.
+Ein lokaler, read-only Indexer erstellt aus konfigurierten Vault-Pfaden einen Graphen. Eine schlanke Browseroberfläche bietet Suche, Knotendetails, eine fokussierte direkte Nachbarschaft und eine interaktive Canvas-Karte. Bei großen Nachbarschaften zeigt die Karte die ersten 36 Knoten, während die vollständige Beziehungsliste weiterhin erreichbar bleibt. Die Vollansicht, Strukturkanten aus Tags und Areas sowie semantische Ähnlichkeit folgen erst später.
