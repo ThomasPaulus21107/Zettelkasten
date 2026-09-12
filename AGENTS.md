@@ -43,6 +43,13 @@ Damit Markdown-Arbeit im Gespräch unmittelbar erkennbar ist, wird eine knappe K
 
 Die Signale werden nur verwendet, wenn die jeweilige Aktion tatsächlich stattgefunden hat oder als nächster Schritt unmittelbar bevorsteht.
 
+## Git- und Release-Workflow
+
+- Commit-Nachrichten folgen Conventional Commits, insbesondere `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:` und `build:`. Inkompatible Änderungen kennzeichnen `!` im Typ oder einen `BREAKING CHANGE:`-Footer.
+- Entwicklung ist trunk-orientiert: `main` bleibt integrierbar. Änderungen entstehen auf kleinen, kurzlebigen Branches, werden per Pull Request geprüft und zeitnah nach `main` gemergt.
+- Branches benennen die Absicht, zum Beispiel `feature/focused-graph-canvas`, `fix/wikilink-resolution` oder `chore/tooling`.
+- Semantic Release wird eingeführt, sobald die Anwendung als nutzbare Version veröffentlicht wird. Dann bestimmen Conventional Commits die Versionsstufe und das Changelog: `fix` für Patch, `feat` für Minor, Breaking Changes für Major.
+
 ## Sicherheitsgrenze für spätere Schreibfunktionen
 
 Vorschläge, Entwürfe und Analysen bleiben getrennt von Vault-Dateien. Ein Schreibvorgang braucht stets sichtbare Quellen, Begründung, Vorschau und eine explizite Bestätigung.
