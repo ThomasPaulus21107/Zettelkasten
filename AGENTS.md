@@ -37,7 +37,7 @@ Die Quellen bestehen aus den getrennten Domänen `SX` (soziale Systeme) und `DX`
 
 Damit Markdown-Arbeit im Gespräch unmittelbar erkennbar ist, wird eine knappe Kommentarzeile mit genau einem passenden Signal gesendet:
 
-- 🧭 nach dem vollständigen Lesen von `AGENTS.md`
+- 🗂️ nach dem vollständigen Lesen von `AGENTS.md`
 - 📖 nach dem Lesen einer anderen Markdown-Datei
 - ✍️ unmittelbar vor dem Erstellen oder Ändern einer Markdown-Datei
 
