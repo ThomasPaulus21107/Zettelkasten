@@ -29,6 +29,19 @@
           <h2 id="title"></h2>
           <p id="path" class="path"></p>
           <dl id="metadata"></dl>
+          <section class="graph-section" aria-labelledby="graph-heading">
+            <div class="relationship-header">
+              <div>
+                <p class="eyebrow">Fokus-Graph</p>
+                <h3 id="graph-heading">Direkte Verbindungen</h3>
+              </div>
+              <div class="graph-actions">
+                <button id="reset-graph" type="button">Ansicht zurücksetzen</button>
+              </div>
+            </div>
+            <p id="graph-summary" class="graph-summary"></p>
+            <canvas id="graph-canvas" aria-label="Interaktive Karte der direkten Zettelverbindungen">Dein Browser unterstützt keine Canvas-Ansicht. Nutze die Beziehungsliste darunter.</canvas>
+          </section>
           <div class="relationship-header">
             <h3>Direkte Nachbarschaft</h3>
             <p id="relationship-count"></p>
