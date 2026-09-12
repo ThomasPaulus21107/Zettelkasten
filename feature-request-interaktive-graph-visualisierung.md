@@ -1,6 +1,6 @@
 # Feature Request: Interaktive Graph-Visualisierung
 
-**Status:** Konzept · **Priorität:** zuerst
+**Status:** In Umsetzung · **Priorität:** zuerst
 
 ## Ziel
 
@@ -42,3 +42,7 @@ Eine lokale, interaktive Landkarte der Zettel schaffen. Sie nimmt Obsidian Graph
 ## Offene Entscheidung
 
 Festzulegen ist, ob der erste Startzustand getrennte SX-/DX-Landkarten oder eine gemeinsame Karte mit prominenter Domänengrenze zeigt.
+
+## Erstes Increment
+
+Ein lokaler, read-only Indexer erstellt aus konfigurierten Vault-Pfaden einen Graphen. Eine schlanke Browseroberfläche bietet Suche, Knotendetails und eine fokussierte direkte Nachbarschaft. Die Vollansicht, Strukturkanten aus Tags und Areas sowie semantische Ähnlichkeit folgen erst später.

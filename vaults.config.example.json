@@ -1,0 +1,13 @@
+{
+  "vaults": [
+    {
+      "id": "SX",
+      "path": "/absolute/path/to/VAULTS/SX"
+    },
+    {
+      "id": "DX",
+      "path": "/absolute/path/to/VAULTS/DX"
+    }
+  ],
+  "excludeDirectories": ["_archive", "_backups", ".obsidian", ".git"]
+}

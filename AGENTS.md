@@ -36,3 +36,7 @@ Die Quellen bestehen aus den getrennten Domänen `SX` (soziale Systeme) und `DX`
 ## Sicherheitsgrenze für spätere Schreibfunktionen
 
 Vorschläge, Entwürfe und Analysen bleiben getrennt von Vault-Dateien. Ein Schreibvorgang braucht stets sichtbare Quellen, Begründung, Vorschau und eine explizite Bestätigung.
+
+## Strukturelle Verbesserungsvorschläge
+
+Wenn eine Änderung an Frontmatter, Linksyntax, Dateibenennung, Taxonomie oder einer anderen Vault-Struktur die Zuverlässigkeit oder den Nutzen der Interaktionsschicht wesentlich verbessert, wird sie aktiv vorgeschlagen. Jeder Vorschlag beschreibt den konkreten Nutzen, die betroffenen Zettel, Risiken, einen Migrationsweg und ob das Feature ohne ihn bereits sinnvoll funktioniert. Strukturelle Vault-Änderungen werden niemals stillschweigend vorausgesetzt oder automatisch ausgeführt.
