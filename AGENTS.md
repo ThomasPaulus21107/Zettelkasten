@@ -33,6 +33,16 @@ Die Quellen bestehen aus den getrennten Domänen `SX` (soziale Systeme) und `DX`
 - `feature-request-<name>.md` beschreibt jeweils ein abgrenzbares Vorhaben.
 - Neue Annahmen werden als offen markiert, bis sie bestätigt oder umgesetzt sind.
 
+## Markdown-Statussignale
+
+Damit Markdown-Arbeit im Gespräch unmittelbar erkennbar ist, wird eine knappe Kommentarzeile mit genau einem passenden Signal gesendet:
+
+- 🧭 nach dem vollständigen Lesen von `AGENTS.md`
+- 📖 nach dem Lesen einer anderen Markdown-Datei
+- ✍️ unmittelbar vor dem Erstellen oder Ändern einer Markdown-Datei
+
+Die Signale werden nur verwendet, wenn die jeweilige Aktion tatsächlich stattgefunden hat oder als nächster Schritt unmittelbar bevorsteht.
+
 ## Sicherheitsgrenze für spätere Schreibfunktionen
 
 Vorschläge, Entwürfe und Analysen bleiben getrennt von Vault-Dateien. Ein Schreibvorgang braucht stets sichtbare Quellen, Begründung, Vorschau und eine explizite Bestätigung.
