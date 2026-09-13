@@ -8,7 +8,7 @@ Lokale, read-only Graphansicht für die SX- und DX-Vaults. Der erste Prototyp li
 2. `npm start` ausführen.
 3. `http://localhost:4173` im Browser öffnen.
 
-Für die Fortsetzung in der Desktop-App siehe [`DEVELOPMENT.md`](DEVELOPMENT.md). Der Integrationsvertrag zur getrennten Quelle steht in [`docs/vault-integration-contract.md`](docs/vault-integration-contract.md).
+Der aktuelle Übergabestand und das nächste Increment stehen in [`PROJECT-STATUS.md`](PROJECT-STATUS.md). Für die Fortsetzung in der Desktop-App siehe [`DEVELOPMENT.md`](DEVELOPMENT.md). Der Integrationsvertrag zur getrennten Quelle steht in [`docs/vault-integration-contract.md`](docs/vault-integration-contract.md).
 
 Es werden keine Abhängigkeiten installiert und keine Vault-Dateien geschrieben. Der Index entsteht bei jedem Abruf neu und bleibt dadurch immer ein Abbild des aktuellen Dateibestands. Die Graph-API liefert in diesem Increment ausschließlich Metadaten und Beziehungen, nicht den Markdown-Inhalt der Zettel.
 
@@ -19,6 +19,8 @@ Es werden keine Abhängigkeiten installiert und keine Vault-Dateien geschrieben.
 - löst Wiki-Links case-insensitiv über Dateiname, Titel und Aliasse auf
 - unterscheidet Inline-Wiki-Links von `related`-Kanten
 - zeigt Suche, Knotendetails und direkte Nachbarschaft
+
+Das ist ein Early Prototype. Bekannte Abweichungen bei YAML-Blocklisten, gleichnamigen Linkzielen und Dateiklassifikation werden im nächsten Increment [`feature-request-verlaesslicher-graph-index.md`](feature-request-verlaesslicher-graph-index.md) behoben.
 
 ## Strukturelle Empfehlung
 
