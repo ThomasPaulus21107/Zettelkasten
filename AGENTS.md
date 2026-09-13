@@ -27,13 +27,18 @@ Die Quellen bestehen aus den getrennten Domänen `SX` (soziale Systeme) und `DX`
 - Das Frontmatter enthält unter anderem `title`, `type`, `status`, `tags`, `related`, `aliases` und `area`.
 - Archiv- und Backup-Pfade werden beim normalen Index ausgeschlossen.
 
+Der aktuelle Prototyp bildet diese Regeln noch nicht vollständig ab. Insbesondere YAML-Blocklisten, Pfadmehrdeutigkeiten und die Trennung von Zetteln, Systemdateien, Logs und Entwürfen gelten bis zum Abschluss des verlässlichen Graphindex als bekannte technische Lücken.
+
 ## Dokumentation
 
 - `CONCEPT.md` enthält Vision, Phasen und fachliche Entscheidungen.
+- `PROJECT-STATUS.md` ist der geprüfte Übergabepunkt mit Ist-Stand, Risiken und Arbeitsreihenfolge.
 - `DEVELOPMENT.md` beschreibt Desktop-Fortsetzung, lokalen Start, Tests und Git-Ablauf.
 - `docs/vault-integration-contract.md` fasst den Integrationsvertrag der externen Vault-Quelle zusammen.
 - `feature-request-<name>.md` beschreibt jeweils ein abgrenzbares Vorhaben.
 - Neue Annahmen werden als offen markiert, bis sie bestätigt oder umgesetzt sind.
+
+Bei einem neuen Projekt-Chat werden zuerst `AGENTS.md` und `PROJECT-STATUS.md` gelesen. Ohne eine anderslautende Nutzerpriorität ist `feature-request-verlaesslicher-graph-index.md` das nächste Increment.
 
 ## Externe Quelle und aktuelle Basis
 
