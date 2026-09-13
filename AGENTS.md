@@ -30,8 +30,14 @@ Die Quellen bestehen aus den getrennten Domänen `SX` (soziale Systeme) und `DX`
 ## Dokumentation
 
 - `CONCEPT.md` enthält Vision, Phasen und fachliche Entscheidungen.
+- `DEVELOPMENT.md` beschreibt Desktop-Fortsetzung, lokalen Start, Tests und Git-Ablauf.
+- `docs/vault-integration-contract.md` fasst den Integrationsvertrag der externen Vault-Quelle zusammen.
 - `feature-request-<name>.md` beschreibt jeweils ein abgrenzbares Vorhaben.
 - Neue Annahmen werden als offen markiert, bis sie bestätigt oder umgesetzt sind.
+
+## Externe Quelle und aktuelle Basis
+
+Das externe Repository [`ThomasPaulus21107/VAULTS`](https://github.com/ThomasPaulus21107/VAULTS) ist die Quelle der Wahrheit. Besonders relevant sind dort `CLAUDE.md`, `SX/CLAUDE.md`, `DX/CLAUDE.md`, `Luhmann-Prinzipien.md` und `OFFENE-THEMEN.md`; sie werden nicht in dieses Repository kopiert. Der aktuelle lokale App-Snapshot umfasst rund 1.916 Knoten, 13.849 explizite Kanten und 417 unaufgelöste Linkziele. Diese Zahlen sind laufabhängig und ersetzen keine Messung aus dem Vault.
 
 ## Markdown-Statussignale
 

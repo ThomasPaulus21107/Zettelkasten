@@ -1,6 +1,6 @@
 # Feature Request: Interaktive Graph-Visualisierung
 
-**Status:** In Umsetzung · **Priorität:** zuerst
+**Status:** MVP umgesetzt, nächste Ausbaustufe offen · **Priorität:** zuerst
 
 ## Ziel
 
@@ -47,3 +47,5 @@ Festzulegen ist, ob der erste Startzustand getrennte SX-/DX-Landkarten oder eine
 ## Erstes Increment
 
 Ein lokaler, read-only Indexer erstellt aus konfigurierten Vault-Pfaden einen Graphen. Eine schlanke Browseroberfläche bietet Suche, Knotendetails, eine fokussierte direkte Nachbarschaft und eine interaktive Canvas-Karte. Bei großen Nachbarschaften zeigt die Karte die ersten 36 Knoten, während die vollständige Beziehungsliste weiterhin erreichbar bleibt. Die Vollansicht, Strukturkanten aus Tags und Areas sowie semantische Ähnlichkeit folgen erst später.
+
+Die Umsetzung ist nach `main` gemergt. Als nächste Ausbaustufen gelten Filter nach Vault/Area/Typ, ein stabileres Layout für große Graphen, Pfad-Historie und eine klarere Darstellung unaufgelöster Ziele.

@@ -15,6 +15,8 @@ Das externe Vault-Repository enthält die zwei bewusst getrennten Domänen:
 
 Die Zettel verfügen über Obsidian-Wiki-Links, Aliasse, YAML-Frontmatter, `related`-Bezüge und `area`-Zuordnungen. Dadurch ist ein Graph nicht nur aus Wortähnlichkeiten ableitbar, sondern zunächst aus kuratierten Beziehungen.
 
+Die detaillierten Quellregeln sind in [`docs/vault-integration-contract.md`](docs/vault-integration-contract.md) zusammengefasst. Die maßgeblichen Originale bleiben im separaten Vault-Repository. Der lokale Prototyp hat zuletzt 1.916 Knoten, 13.849 explizite Kanten und 417 unaufgelöste Linkziele erkannt; diese Werte dienen als Größenordnung für Indexierung und Darstellung.
+
 ## Produktphasen
 
 1. **Graph-Landkarte:** lokale, interaktive Visualisierung und Zettel-Fokus; ausschließlich lesend.
@@ -41,6 +43,15 @@ Der globale Graph dient als Orientierung. Die eigentliche Arbeit erfolgt in foku
 - semantische KI-Verbindungen
 - Hosting, Authentifizierung und Mehrbenutzerbetrieb
 - vollständiger Lesemodus oder Pflegemodus
+
+## Getroffene Entscheidungen
+
+- Das Projekt ist eine read-only Interaktionsschicht; die Vaults bleiben die Datenquelle und werden nicht in dieses Repo gespiegelt.
+- SX und DX bleiben als Domänen erkennbar. Eine gemeinsame Karte ist möglich, muss die Vault-Grenze aber sichtbar lassen.
+- Explizite Beziehungen werden zuerst visualisiert. Berechnete Ähnlichkeiten dürfen später nur als Hypothesen mit eigener Herkunft erscheinen.
+- Strukturelle Änderungen an Frontmatter, Links oder Taxonomien werden vorgeschlagen, begründet und bestätigt; sie sind keine stille Voraussetzung für die erste Graphansicht.
+- Die lokale Desktop-App ist der erste Ausführungsort. Web-Hosting ist ein späteres, eigenes Feature.
+- Weiterarbeit erfolgt auf kurzlebigen Branches mit Conventional Commits, Pull Requests und zeitnahem Merge nach `main`.
 
 ## Offene Produktentscheidungen
 
