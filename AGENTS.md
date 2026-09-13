@@ -51,8 +51,20 @@ Damit Markdown-Arbeit im Gespräch unmittelbar erkennbar ist, wird eine knappe K
 - 🗂️ nach dem vollständigen Lesen von `AGENTS.md`
 - 📖 nach dem Lesen einer anderen Markdown-Datei
 - ✍️ unmittelbar vor dem Erstellen oder Ändern einer Markdown-Datei
+- ❓ unmittelbar nach dem Auffinden eines neuen offenen Punkts
+- 💾 unmittelbar nach einem Commit
+- ⬆️ unmittelbar nach einem Push
+- 🔀 unmittelbar nach dem Erstellen oder Aktualisieren eines Pull Requests
+- ✅ unmittelbar nach einem Merge
 
 Die Signale werden nur verwendet, wenn die jeweilige Aktion tatsächlich stattgefunden hat oder als nächster Schritt unmittelbar bevorsteht.
+
+## Offene Punkte und Klärungen
+
+- Offene fachliche, technische oder Produktentscheidungen werden sofort in `open-points.md` erfasst, sofern sie nicht bereits dort stehen. Jeder Eintrag enthält Kontext, Auswirkung, eine konkrete Frage und den Status.
+- Nach dem Auffinden eines neuen offenen Punkts wird die Kommentarzeile `❓` gesendet. Der Punkt wird dem Nutzer bei der nächsten passenden Gelegenheit vorgelegt; wenn die Entscheidung die aktuelle Arbeit blockiert oder wesentlich beeinflusst, geschieht das sofort.
+- Offene Punkte werden zu Beginn einer neuen Arbeitsphase und vor Abschluss einer zusammenhängenden Änderung geprüft und dem Nutzer regelmäßig zur Klärung vorgelegt. Wo die Optionen sinnvoll abgrenzbar sind, erfolgt die Vorlage als Multiple Choice; andernfalls als kurze freie Frage.
+- Ein Nutzerentscheid wird in `open-points.md` als entschieden dokumentiert. Entscheidungen werden nicht stillschweigend angenommen, wenn sie den Umfang, die Dateninterpretation oder externe Wirkung wesentlich verändern.
 
 ## Git- und Release-Workflow
 
