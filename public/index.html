@@ -7,49 +7,30 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body>
-    <header>
-      <p class="eyebrow">Zettelkasten Interaktion · lokaler Lesezugriff</p>
-      <h1>Denklines</h1>
-      <p id="summary">Index wird geladen …</p>
-    </header>
     <main>
-      <aside class="search-panel">
-        <label for="search">Zettel finden</label>
-        <input id="search" type="search" placeholder="Titel, Alias oder Pfad">
-        <div id="results" aria-live="polite"></div>
-      </aside>
-      <section class="focus-panel" aria-live="polite">
-        <div id="empty-state">
-          <p class="eyebrow">Startpunkt</p>
-          <h2>Wähle einen Zettel</h2>
-          <p>Die Ansicht zeigt anschließend seine direkten, expliziten Verbindungen. Jede Linie benennt ihre Herkunft.</p>
+      <section class="hero" aria-labelledby="page-title">
+        <p class="eyebrow">Zettelkasten Interaktion · lokaler Lesezugriff</p>
+        <h1 id="page-title">Finde einen Gedanken.</h1>
+        <label class="search-label" for="search">Zettel durchsuchen</label>
+        <input id="search" type="search" placeholder="Titel, Alias oder Pfad" autocomplete="off">
+        <p id="summary" class="summary">Index wird geladen …</p>
+        <div id="type-stats" class="type-stats" aria-label="Bestand nach Typ"></div>
+        <div id="results" class="results" aria-live="polite"></div>
+      </section>
+      <section class="graph-section" aria-labelledby="graph-heading">
+        <div class="graph-heading">
+          <div><p class="eyebrow">Erkundung</p><h2 id="graph-heading">Graph</h2></div>
+          <span class="depth">Relationstiefe: 5 Ebenen</span>
         </div>
-        <div id="focus" hidden>
-          <p id="vault" class="eyebrow"></p>
-          <h2 id="title"></h2>
-          <p id="path" class="path"></p>
-          <dl id="metadata"></dl>
-          <section class="graph-section" aria-labelledby="graph-heading">
-            <div class="relationship-header">
-              <div>
-                <p class="eyebrow">Fokus-Graph</p>
-                <h3 id="graph-heading">Direkte Verbindungen</h3>
-              </div>
-              <div class="graph-actions">
-                <button id="reset-graph" type="button">Ansicht zurücksetzen</button>
-              </div>
-            </div>
-            <p id="graph-summary" class="graph-summary"></p>
-            <canvas id="graph-canvas" aria-label="Interaktive Karte der direkten Zettelverbindungen">Dein Browser unterstützt keine Canvas-Ansicht. Nutze die Beziehungsliste darunter.</canvas>
-          </section>
-          <div class="relationship-header">
-            <h3>Direkte Nachbarschaft</h3>
-            <p id="relationship-count"></p>
-          </div>
-          <div id="relationships"></div>
-        </div>
+        <p id="graph-summary" class="graph-summary">Suche nach einem Zettel, um sein Beziehungsnetz zu erkunden.</p>
+        <canvas id="graph-canvas" aria-label="Interaktive Karte der Zettelverbindungen">Dein Browser unterstützt keine Canvas-Ansicht.</canvas>
       </section>
     </main>
+    <dialog id="note-dialog" aria-labelledby="note-title"><article>
+      <button id="close-note" class="close-note" type="button" aria-label="Zettel schließen">×</button>
+      <p id="note-vault" class="eyebrow"></p><h2 id="note-title"></h2><p id="note-path" class="path"></p>
+      <dl id="note-metadata"></dl><div id="note-content" class="note-content"></div>
+    </article></dialog>
     <template id="result-template">
       <button class="result"><span class="result-title"></span><span class="result-meta"></span></button>
     </template>
