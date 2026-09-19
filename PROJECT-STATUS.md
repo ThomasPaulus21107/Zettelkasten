@@ -11,7 +11,7 @@ Das Repository ist eine gute, bewusst kleine Basis für den lokalen Graph-Protot
 ## Umgesetzt
 
 - lokaler Node-Server auf `127.0.0.1`, standardmäßig Port 4173
-- read-only Einlesen separat konfigurierter SX- und DX-Pfade
+- GitHub als Quelle der Wahrheit; automatischer read-only Cache-Abgleich vor jedem Indexabruf
 - Ausschluss konfigurierter Archiv-, Backup-, Obsidian- und Git-Verzeichnisse
 - Graph aus Inline-Wiki-Links und `related`
 - Suche nach Titel, Alias und Pfad
@@ -63,7 +63,7 @@ Der Graph-Prototyp ist umgesetzt, aber noch nicht der gesamte als „Version 1�
 
 ## Getroffene Entscheidungen
 
-- Das Vault-Repository bleibt Quelle der Wahrheit und standardmäßig read-only.
+- Das GitHub-Vault-Repository bleibt Quelle der Wahrheit und standardmäßig read-only. Der lokale Cache wird vor Indexabrufen aktualisiert; Branch, Commit und Abrufzeit sind in der Oberfläche sichtbar.
 - Vault-Inhalte und lokale Konfiguration werden nicht in dieses Repository eingecheckt.
 - Explizite Beziehungen haben Vorrang; berechnete Ähnlichkeiten werden später sichtbar als Hypothesen gekennzeichnet.
 - SX und DX dürfen gemeinsam dargestellt werden, ihre Herkunft muss aber immer sichtbar bleiben.

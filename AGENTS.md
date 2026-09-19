@@ -2,13 +2,13 @@
 
 ## Produktkontext
 
-Dieses Repository ist die Interaktionsschicht für das externe Vault-Repository `ThomasPaulus21107/VAULTS`. Das Vault-Repository ist die Quelle; diese Anwendung liest und interpretiert sie, ersetzt sie aber nicht.
+Dieses Repository ist die Interaktionsschicht für das externe Vault-Repository `ThomasPaulus21107/VAULTS`. GitHub ist die Quelle der Wahrheit; diese Anwendung liest und interpretiert den Vault, ersetzt ihn aber nicht. Ein lokaler Git-Cache ist ausschließlich eine automatisch aktualisierte technische Arbeitskopie und nie eine zweite Quelle der Wahrheit.
 
 Die Quellen bestehen aus den getrennten Domänen `SX` (soziale Systeme) und `DX` (digitale Transformation). Derzeit gibt es rund 1.900 aktive Markdown-Dateien.
 
 ## Leitprinzipien
 
-- Vault-Inhalte werden standardmäßig ausschließlich gelesen.
+- Vault-Inhalte werden standardmäßig ausschließlich gelesen. Der Cache wird vor jedem Indexabruf gegen GitHub aktualisiert; bei fehlendem GitHub-Zugriff wird kein stillschweigend veralteter Stand als aktuell ausgegeben.
 - Keine Vault-Dateien oder vertrauliche Zettelinhalte in dieses Repository kopieren oder einchecken.
 - Die Anwendung macht Beziehungen nachvollziehbar: Herkunft, Typ, Richtung und Gewicht einer Kante bleiben sichtbar.
 - Interaktion vor Dekoration: Ein Graph muss Suche, Fokus, Filter und Übergang zum Zettelinhalt anbieten.
@@ -40,9 +40,15 @@ Der aktuelle Prototyp bildet diese Regeln noch nicht vollständig ab. Insbesonde
 
 Bei einem neuen Projekt-Chat werden zuerst `AGENTS.md` und `PROJECT-STATUS.md` gelesen. Ohne eine anderslautende Nutzerpriorität ist `feature-request-verlaesslicher-graph-index.md` das nächste Increment.
 
+## Vorschau und Übergabe
+
+- Nach Änderungen an der Oberfläche wird die Anwendung als laufende lokale Instanz gestartet und über ihre `localhost`-Adresse in Codex geöffnet.
+- Eine isolierte HTML-Datei oder statische HTML-Vorschau ist nicht die primäre Übergabe, weil API, Vault-Index, Filter, Graph und Zettelansicht den lokalen Server benötigen.
+- Der lokale Server bleibt für die weitere Interaktion verfügbar, sofern der Nutzer nicht ausdrücklich um das Beenden bittet.
+
 ## Externe Quelle und aktuelle Basis
 
-Das externe Repository [`ThomasPaulus21107/VAULTS`](https://github.com/ThomasPaulus21107/VAULTS) ist die Quelle der Wahrheit. Besonders relevant sind dort `CLAUDE.md`, `SX/CLAUDE.md`, `DX/CLAUDE.md`, `Luhmann-Prinzipien.md` und `OFFENE-THEMEN.md`; sie werden nicht in dieses Repository kopiert. Der aktuelle lokale App-Snapshot umfasst rund 1.916 Knoten, 13.849 explizite Kanten und 417 unaufgelöste Linkziele. Diese Zahlen sind laufabhängig und ersetzen keine Messung aus dem Vault.
+Das externe Repository [`ThomasPaulus21107/VAULTS`](https://github.com/ThomasPaulus21107/VAULTS) ist die Quelle der Wahrheit. Besonders relevant sind dort `CLAUDE.md`, `SX/CLAUDE.md`, `DX/CLAUDE.md`, `Luhmann-Prinzipien.md` und `OFFENE-THEMEN.md`; sie werden nicht in dieses Repository kopiert. Die Oberfläche zeigt den verwendeten GitHub-Branch, Commit und Abrufzeitpunkt. Aktuelle Messwerte sind laufabhängig und ersetzen keine Messung aus dem Vault.
 
 ## Markdown-Statussignale
 

@@ -8,29 +8,135 @@
   </head>
   <body>
     <main>
+      <nav class="main-menu" aria-label="Bereiche">
+        <a href="#news">News</a>
+        <a href="#verzetteln">Verzetteln</a>
+        <a href="#rabbit-hole">Rabbit Hole</a>
+      </nav>
       <section class="hero" aria-labelledby="page-title">
-        <p class="eyebrow">Zettelkasten Interaktion · lokaler Lesezugriff</p>
+        <p class="eyebrow">Zettelkasten · dein Rabbit Hole</p>
         <h1 id="page-title">Finde einen Gedanken.</h1>
         <label class="search-label" for="search">Zettel durchsuchen</label>
         <input id="search" type="search" placeholder="Titel, Alias oder Pfad" autocomplete="off">
         <p id="summary" class="summary">Index wird geladen …</p>
-        <div id="type-stats" class="type-stats" aria-label="Bestand nach Typ"></div>
+        <p id="source-status" class="source-status" aria-live="polite"></p>
+        <div class="stats-panel">
+          <section aria-labelledby="inventory-heading">
+            <h2 id="inventory-heading" class="stats-heading">Bestand</h2>
+            <div id="inventory-stats" class="type-stats" aria-label="Bestand nach Typ"></div>
+          </section>
+          <section aria-labelledby="sources-heading">
+            <h2 id="sources-heading" class="stats-heading">Quellen <span>Vaults</span></h2>
+            <div id="source-stats" class="type-stats" aria-label="Zettel nach Quell-Vault"></div>
+          </section>
+          <section aria-labelledby="themes-heading">
+            <h2 id="themes-heading" class="stats-heading">Themen <span>Areas</span></h2>
+            <div id="theme-stats" class="type-stats" aria-label="Themen nach Area"></div>
+          </section>
+          <section aria-labelledby="markers-heading">
+            <h2 id="markers-heading" class="stats-heading">Marker</h2>
+            <div id="marker-stats" class="type-stats" aria-label="Marker im Text"></div>
+          </section>
+          <section id="verzetteln" aria-labelledby="care-heading">
+            <h2 id="care-heading" class="stats-heading">Pflege</h2>
+            <div id="care-stats" class="type-stats" aria-label="Struktur- und Reifehinweise"></div>
+          </section>
+        </div>
+        <p id="results-summary" class="results-summary" aria-live="polite"></p>
         <div id="results" class="results" aria-live="polite"></div>
       </section>
-      <section class="graph-section" aria-labelledby="graph-heading">
-        <div class="graph-heading">
-          <div><p class="eyebrow">Erkundung</p><h2 id="graph-heading">Graph</h2></div>
-          <span class="depth">Relationstiefe: 5 Ebenen</span>
+      <section id="news" class="news-section" aria-labelledby="news-heading">
+        <div class="news-heading">
+          <div>
+            <p class="eyebrow">Überblick</p>
+            <h2 id="news-heading">Was ist neu?</h2>
+          </div>
+          <label class="news-window" for="news-window">
+            <span>Zeitraum</span>
+            <select id="news-window">
+              <option value="1">Heute</option>
+              <option value="7">Letzte 7 Tage</option>
+              <option value="10" selected>Letzte 10 Tage</option>
+              <option value="30">Letzte 30 Tage</option>
+              <option value="90">Letzte 90 Tage</option>
+            </select>
+          </label>
         </div>
-        <p id="graph-summary" class="graph-summary">Suche nach einem Zettel, um sein Beziehungsnetz zu erkunden.</p>
-        <canvas id="graph-canvas" aria-label="Interaktive Karte der Zettelverbindungen">Dein Browser unterstützt keine Canvas-Ansicht.</canvas>
+        <p id="news-summary" class="news-summary" aria-live="polite"></p>
+        <div class="news-columns">
+          <section aria-labelledby="new-notes-heading">
+            <h3 id="new-notes-heading">Neue Zettel</h3>
+            <div id="new-notes" class="news-list"></div>
+          </section>
+          <section aria-labelledby="changed-notes-heading">
+            <h3 id="changed-notes-heading">Änderungen</h3>
+            <div id="changed-notes" class="news-list"></div>
+          </section>
+        </div>
+      </section>
+      <section id="exploration-shell" class="exploration-shell">
+        <aside id="note-reader" class="note-reader" aria-labelledby="note-title" hidden>
+          <article>
+            <header class="reader-toolbar">
+              <span id="reader-mode" class="reader-mode">Lesemodus</span>
+              <div class="reader-actions">
+                <button id="quick-add-marker" class="quick-marker" type="button">@add</button>
+                <button id="edit-note" class="edit-note" type="button">Bearbeiten</button>
+                <button id="close-note" class="close-note" type="button" aria-label="Leseraum schließen">×</button>
+              </div>
+            </header>
+            <p id="note-vault" class="eyebrow"></p>
+            <h2 id="note-title"></h2>
+            <p id="note-path" class="path"></p>
+            <dl id="note-metadata"></dl>
+            <div id="note-content" class="note-content"></div>
+            <section id="note-editor-panel" class="note-editor-panel" aria-labelledby="editor-heading" hidden>
+              <h3 id="editor-heading">Zettel bearbeiten</h3>
+              <label for="note-editor">Markdown-Inhalt</label>
+              <textarea id="note-editor" rows="20" spellcheck="true"></textarea>
+              <div class="editor-actions">
+                <button id="insert-add-marker" type="button">@add setzen</button>
+                <button id="preview-note" class="primary-action" type="button">Änderung prüfen</button>
+                <button id="cancel-edit" type="button">Abbrechen</button>
+              </div>
+              <p id="editor-status" class="editor-status" aria-live="polite"></p>
+              <section id="change-preview" class="change-preview" aria-labelledby="preview-heading" hidden>
+                <h3 id="preview-heading">Vorschau vor dem Schreiben</h3>
+                <p><strong>Quelle:</strong> <span id="preview-source"></span></p>
+                <p><strong>Begründung:</strong> Manuelle Änderung im Zettelkasten-Editor.</p>
+                <pre id="change-diff" aria-label="Änderungen am Zettel"></pre>
+                <button id="confirm-save" class="confirm-save" type="button">Änderung bestätigen und speichern</button>
+              </section>
+            </section>
+          </article>
+        </aside>
+        <section id="rabbit-hole" class="graph-section" aria-labelledby="graph-heading">
+        <div class="graph-heading">
+          <div><p class="eyebrow">Erkundung</p><h2 id="graph-heading">Rabbit Hole Navigation</h2></div>
+          <label class="depth-control" for="graph-depth">
+            <span>Tiefe</span>
+            <input id="graph-depth" type="range" min="1" max="5" value="5" step="1">
+            <output id="depth-value" for="graph-depth">5 Ebenen</output>
+          </label>
+        </div>
+        <p id="graph-summary" class="graph-summary">Öffne einen Gedanken und folge seinen Abzweigungen.</p>
+        <div class="graph-tools" aria-label="Steuerung und Legende des Rabbit Holes">
+          <div class="graph-controls" aria-label="Graph navigieren">
+            <button id="graph-zoom-out" type="button" aria-label="Graph verkleinern">−</button>
+            <button id="graph-reset" type="button">Zentrieren</button>
+            <button id="graph-zoom-in" type="button" aria-label="Graph vergrößern">+</button>
+          </div>
+          <div class="graph-legend" aria-label="Legende">
+            <span><i class="legend-room sx"></i>SX-Raum</span>
+            <span><i class="legend-room dx"></i>DX-Raum</span>
+            <span><i class="legend-passage inline"></i>Wiki-Link</span>
+            <span><i class="legend-passage related"></i>Related</span>
+          </div>
+        </div>
+        <canvas id="graph-canvas" tabindex="0" aria-label="Interaktive Rabbit Hole Navigation aus Zetteln und ihren Abzweigungen. Mausrad zoomt, Ziehen verschiebt, Klick öffnet einen Raum.">Dein Browser unterstützt keine Canvas-Ansicht.</canvas>
+        </section>
       </section>
     </main>
-    <dialog id="note-dialog" aria-labelledby="note-title"><article>
-      <button id="close-note" class="close-note" type="button" aria-label="Zettel schließen">×</button>
-      <p id="note-vault" class="eyebrow"></p><h2 id="note-title"></h2><p id="note-path" class="path"></p>
-      <dl id="note-metadata"></dl><div id="note-content" class="note-content"></div>
-    </article></dialog>
     <template id="result-template">
       <button class="result"><span class="result-title"></span><span class="result-meta"></span></button>
     </template>

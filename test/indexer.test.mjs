@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import { after, test } from 'node:test';
-import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { buildGraph, loadNote } from '../lib/indexer.mjs';
+import { buildGraph, loadNote, saveNote } from '../lib/indexer.mjs';
 
 const root = await mkdtemp(path.join(tmpdir(), 'zettelkasten-indexer-'));
 after(() => rm(root, { recursive: true, force: true }));
@@ -13,12 +13,14 @@ test('indexiert explizite Kanten und schließt Archive aus', async () => {
   await mkdir(path.join(root, 'SX', '_archive'), { recursive: true });
   await writeFile(path.join(root, 'SX', 'Zettel', 'Systemtheorie.md'), `---
 title: Systemtheorie
+created: 2026-09-19
+modified: 2026-09-20
 aliases: [System Theory]
 tags: [system]
 related: ["[[Führung]]"]
 area: organisation
 ---
-Ein Anschluss an [[führung]] und [[Zettel/System Theory]].`);
+Ein Anschluss an [[führung]] und [[Zettel/System Theory]]. @fix @fix @gap`);
   await writeFile(path.join(root, 'SX', 'Zettel', 'Führung.md'), '---\ntitle: Führung\n---\n');
   await writeFile(path.join(root, 'SX', '_archive', 'Vergangenheit.md'), '---\ntitle: Vergangenheit\n---\n');
 
@@ -27,6 +29,16 @@ Ein Anschluss an [[führung]] und [[Zettel/System Theory]].`);
   assert.equal('body' in graph.nodes[0], false);
   assert.equal(graph.stats.edges, 3);
   assert.equal(graph.stats.unresolvedLinks, 0);
+  assert.equal(graph.stats.emptyNotes, 1);
+  assert.equal(graph.stats.markedNotes, 1);
+  assert.equal(graph.stats.markerOccurrences, 3);
+  const systemtheorie = graph.nodes.find((node) => node.title === 'Systemtheorie');
+  assert.deepEqual(systemtheorie.markers, ['@fix', '@gap']);
+  assert.deepEqual(systemtheorie.markerCounts, { '@fix': 2, '@gap': 1 });
+  assert.equal(systemtheorie.markerCount, 3);
+  assert.equal(systemtheorie.emptyBody, false);
+  assert.equal(systemtheorie.created, '2026-09-19');
+  assert.equal(systemtheorie.modified, '2026-09-20');
   assert.deepEqual(graph.edges.map((edge) => edge.kind).sort(), ['inline', 'inline', 'related']);
   assert.deepEqual([...new Set(graph.edges.map((edge) => edge.target))].sort(), ['SX:Zettel/Führung.md', 'SX:Zettel/Systemtheorie.md']);
 });
@@ -36,5 +48,30 @@ test('lädt einen einzelnen Zettel getrennt von der Graph-API', async () => {
   const note = await loadNote(config, 'SX:Zettel/Führung.md');
   assert.equal(note.title, 'Führung');
   assert.equal('content' in note, true);
+  assert.match(note.revision, /^[a-f0-9]{64}$/);
   assert.equal('body' in note, false);
+});
+
+test('schreibt nur nach Bestätigung und schützt Frontmatter sowie konkurrierende Änderungen', async () => {
+  const config = { vaults: [{ id: 'SX', path: path.join(root, 'SX') }] };
+  const noteId = 'SX:Zettel/Führung.md';
+  const current = await loadNote(config, noteId);
+  await assert.rejects(
+    saveNote(config, { noteId, content: '\nNeu @add', expectedRevision: current.revision, confirmed: false, reason: 'Test' }),
+    /nicht ausdrücklich bestätigt/
+  );
+  const saved = await saveNote(config, {
+    noteId,
+    content: '\nNeu @add',
+    expectedRevision: current.revision,
+    confirmed: true,
+    reason: 'Manuelle Änderung im Test'
+  });
+  assert.equal(saved.content, '\nNeu @add');
+  assert.deepEqual(saved.markers, ['@add']);
+  assert.match(await readFile(path.join(root, 'SX', 'Zettel', 'Führung.md'), 'utf8'), /^---\ntitle: Führung\n---\nNeu @add$/);
+  await assert.rejects(
+    saveNote(config, { noteId, content: '\nVeraltet', expectedRevision: current.revision, confirmed: true, reason: 'Test' }),
+    /zwischenzeitlich geändert/
+  );
 });
