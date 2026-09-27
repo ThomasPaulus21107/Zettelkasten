@@ -20,7 +20,7 @@ Es werden keine Abhängigkeiten installiert und keine Vault-Dateien geschrieben.
 - unterscheidet Inline-Wiki-Links von `related`-Kanten
 - zeigt Suche, Knotendetails und direkte Nachbarschaft
 
-Das ist ein Early Prototype. Bekannte Abweichungen bei YAML-Blocklisten, gleichnamigen Linkzielen und Dateiklassifikation werden im nächsten Increment [`feature-request-verlaesslicher-graph-index.md`](feature-request-verlaesslicher-graph-index.md) behoben.
+Das ist ein Early Prototype. Bekannte Abweichungen bei YAML-Blocklisten, gleichnamigen Linkzielen und Dateiklassifikation werden im nächsten Increment [„Verlässlicher Graphindex“](roadmap/feature-requests/verlaesslicher-graph-index.md) behoben. Die vollständige Planung und der geprüfte Funktionsstand stehen in der [Roadmap](roadmap/README.md).
 
 ## Strukturelle Empfehlung
 

@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Graph · Zettelkasten</title>
+    <link rel="stylesheet" href="/graph.css">
+  </head>
+  <body>
+    <div class="graph-app">
+      <header class="graph-topbar">
+        <a class="graph-brand" href="/" aria-label="Zur Zettelkasten-Übersicht"><span>Zettelkasten</span><strong>Graph</strong></a>
+        <div class="mode-switch" role="group" aria-label="Graphmodus">
+          <button id="mode-global" type="button" aria-pressed="true">Gesamt</button>
+          <button id="mode-local" type="button" aria-pressed="false" disabled>Lokal</button>
+        </div>
+        <div class="graph-search-wrap">
+          <label class="visually-hidden" for="graph-app-search">Zettel im Graph suchen</label>
+          <input id="graph-app-search" type="search" placeholder="Zettel suchen …" autocomplete="off">
+          <div id="graph-search-popover" class="search-popover" hidden></div>
+        </div>
+        <p id="graph-source" class="graph-source">Graph wird geladen …</p>
+        <a id="selected-read-top" class="topbar-action is-disabled" aria-disabled="true">Lesen</a>
+        <button id="settings-toggle" class="icon-button settings-toggle" type="button" aria-expanded="false" aria-controls="graph-settings" aria-label="Graph-Einstellungen ein- oder ausblenden">⚙</button>
+      </header>
+
+      <main class="graph-layout settings-hidden">
+        <section class="graph-stage" aria-labelledby="graph-title">
+          <div class="graph-stage-heading">
+            <div>
+              <p class="eyebrow">Erkundung</p>
+              <h1 id="graph-title">Gesamtgraph</h1>
+            </div>
+            <p id="graph-summary" class="graph-summary" aria-live="polite"></p>
+          </div>
+
+          <div class="graph-floating-tools" aria-label="Graphansicht steuern">
+            <button id="zoom-out" type="button" aria-label="Verkleinern">−</button>
+            <button id="fit-view" type="button">Einpassen</button>
+            <button id="zoom-in" type="button" aria-label="Vergrößern">+</button>
+            <button id="layout-toggle" type="button">Layout pausieren</button>
+          </div>
+
+          <div id="sigma-container" class="sigma-container" tabindex="0" role="application" aria-describedby="graph-keyboard-help"></div>
+          <div id="graph-loading" class="graph-loading" role="status">Graphdaten werden geladen …</div>
+          <p id="graph-keyboard-help" class="visually-hidden">Mausrad oder Plus und Minus zoomen. Ziehen oder Pfeiltasten verschieben. Escape hebt die Auswahl auf. Die zugängliche Knotenliste steht unterhalb des Graphen.</p>
+
+          <article id="selection-card" class="selection-card" hidden>
+            <button id="selection-close" class="selection-close" type="button" aria-label="Auswahl schließen">×</button>
+            <p id="selection-vault" class="selection-vault"></p>
+            <h2 id="selection-title"></h2>
+            <p id="selection-meta" class="selection-meta"></p>
+            <p id="selection-links" class="selection-links"></p>
+            <div class="selection-actions">
+              <button id="explore-local" type="button">Lokal erkunden</button>
+              <a id="selection-read">Zettel lesen</a>
+            </div>
+          </article>
+        </section>
+
+        <aside id="graph-settings" class="graph-settings" aria-label="Graph-Einstellungen">
+          <div class="settings-heading"><div><p class="eyebrow">Ansicht</p><h2>Einstellungen</h2></div><button id="settings-close" class="icon-button" type="button" aria-label="Einstellungen schließen">×</button></div>
+
+          <details open>
+            <summary>Filter</summary>
+            <fieldset>
+              <legend>Quellen</legend>
+              <label><input id="filter-sx" type="checkbox" checked> SX</label>
+              <label><input id="filter-dx" type="checkbox" checked> DX</label>
+            </fieldset>
+            <fieldset>
+              <legend>Beziehungen</legend>
+              <label><input id="filter-inline" type="checkbox" checked> Wiki-Link</label>
+              <label><input id="filter-related" type="checkbox" checked> Related</label>
+            </fieldset>
+            <label>Area<select id="filter-area"><option value="">Alle Areas</option></select></label>
+            <label>Tag<select id="filter-tag"><option value="">Alle Tags</option></select></label>
+            <label>Typ<select id="filter-type"><option value="">Alle Typen</option></select></label>
+            <label>Status<select id="filter-status"><option value="">Alle Status</option></select></label>
+            <label><input id="show-orphans" type="checkbox" checked> Waisen anzeigen</label>
+            <button id="filter-reset" class="secondary-button" type="button">Filter zurücksetzen</button>
+          </details>
+
+          <details>
+            <summary>Gruppen</summary>
+            <label>Farbe nach<select id="color-group"><option value="vault">Vault</option><option value="area">Area</option><option value="type">Typ</option><option value="status">Status</option></select></label>
+            <p id="group-legend" class="group-legend"></p>
+          </details>
+
+          <details id="local-settings" hidden open>
+            <summary>Lokales Umfeld</summary>
+            <label>Tiefe <output id="depth-value">1</output><input id="local-depth" type="range" min="1" max="5" value="1"></label>
+            <label>Knotenbudget<select id="local-limit"><option>30</option><option selected>60</option><option>120</option><option>250</option></select></label>
+          </details>
+
+          <details open>
+            <summary>Darstellung</summary>
+            <label><input id="show-arrows" type="checkbox"> Pfeile anzeigen</label>
+            <label>Beschriftungen <output id="label-value">mittel</output><input id="label-threshold" type="range" min="4" max="14" value="9"></label>
+            <label>Knotengröße <input id="node-scale" type="range" min="70" max="170" value="100"></label>
+            <label>Kantenstärke <input id="edge-scale" type="range" min="50" max="200" value="100"></label>
+          </details>
+
+          <details>
+            <summary>Kräfte</summary>
+            <label>Abstoßung <input id="force-scaling" type="range" min="2" max="30" value="18"></label>
+            <label>Gravitation <input id="force-gravity" type="range" min="0" max="5" step="0.25" value="0.5"></label>
+            <label>Beruhigung <input id="force-slowdown" type="range" min="1" max="12" value="6"></label>
+            <button id="restart-layout" class="secondary-button" type="button">Layout neu berechnen</button>
+          </details>
+
+          <details class="accessible-list" open>
+            <summary>Sichtbare Zettel <span id="visible-count"></span></summary>
+            <div id="graph-node-list" class="graph-node-list"></div>
+          </details>
+        </aside>
+      </main>
+    </div>
+    <script type="module" src="/graph-app.js"></script>
+  </body>
+</html>

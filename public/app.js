@@ -1,24 +1,44 @@
+import { MARKERS, insertMarkerAtTarget, markerAlreadyFollows } from './marker-model.js';
+
 const elements = {
   search: document.querySelector('#search'), summary: document.querySelector('#summary'), sourceStatus: document.querySelector('#source-status'), inventoryStats: document.querySelector('#inventory-stats'),
   sourceStats: document.querySelector('#source-stats'), themeStats: document.querySelector('#theme-stats'),
-  markerStats: document.querySelector('#marker-stats'), careStats: document.querySelector('#care-stats'),
+  inventoryListView: document.querySelector('#inventory-list-view'), inventoryListHeading: document.querySelector('#inventory-list-heading'), inventoryListSummary: document.querySelector('#inventory-list-summary'), inventoryListFilters: document.querySelector('#inventory-list-filters'), inventoryList: document.querySelector('#inventory-list'), inventoryLoadMore: document.querySelector('#inventory-load-more'),
+  lowLinks: document.querySelector('#low-links'), lowLinksSummary: document.querySelector('#low-links-summary'),
+  markedNotes: document.querySelector('#marked-notes'), markedNotesSummary: document.querySelector('#marked-notes-summary'),
+  careNotes: document.querySelector('#care-notes'), careNotesSummary: document.querySelector('#care-notes-summary'),
   resultsSummary: document.querySelector('#results-summary'), results: document.querySelector('#results'),
   newsWindow: document.querySelector('#news-window'), newsSummary: document.querySelector('#news-summary'), newNotes: document.querySelector('#new-notes'), changedNotes: document.querySelector('#changed-notes'),
   graphSummary: document.querySelector('#graph-summary'), canvas: document.querySelector('#graph-canvas'),
   graphZoomOut: document.querySelector('#graph-zoom-out'), graphReset: document.querySelector('#graph-reset'), graphZoomIn: document.querySelector('#graph-zoom-in'),
-  graphDepth: document.querySelector('#graph-depth'), depthValue: document.querySelector('#depth-value'),
+  graphEnvironmentDown: document.querySelector('#graph-environment-down'), graphEnvironmentLabel: document.querySelector('#graph-environment-label'), graphEnvironmentUp: document.querySelector('#graph-environment-up'),
   resultTemplate: document.querySelector('#result-template'), explorationShell: document.querySelector('#exploration-shell'),
   reader: document.querySelector('#note-reader'), closeNote: document.querySelector('#close-note'),
-  readerMode: document.querySelector('#reader-mode'), editNote: document.querySelector('#edit-note'), quickAddMarker: document.querySelector('#quick-add-marker'),
+  readerMode: document.querySelector('#reader-mode'), editNote: document.querySelector('#edit-note'),
   noteVault: document.querySelector('#note-vault'), noteTitle: document.querySelector('#note-title'), notePath: document.querySelector('#note-path'),
   noteMetadata: document.querySelector('#note-metadata'), noteContent: document.querySelector('#note-content'),
   editorPanel: document.querySelector('#note-editor-panel'), noteEditor: document.querySelector('#note-editor'),
   insertAddMarker: document.querySelector('#insert-add-marker'), previewNote: document.querySelector('#preview-note'), cancelEdit: document.querySelector('#cancel-edit'),
   editorStatus: document.querySelector('#editor-status'), changePreview: document.querySelector('#change-preview'),
-  previewSource: document.querySelector('#preview-source'), changeDiff: document.querySelector('#change-diff'), confirmSave: document.querySelector('#confirm-save')
+  previewSource: document.querySelector('#preview-source'), changeDiff: document.querySelector('#change-diff'), confirmSave: document.querySelector('#confirm-save'),
+  markerContextMenu: document.querySelector('#marker-context-menu'), markerContextTarget: document.querySelector('#marker-context-target'), markerContextButtons: document.querySelector('#marker-context-buttons'), markerContextStatus: document.querySelector('#marker-context-status'),
+  markerPreview: document.querySelector('#marker-preview'), markerPreviewSource: document.querySelector('#marker-preview-source'), markerChangeDiff: document.querySelector('#marker-change-diff'), confirmMarker: document.querySelector('#confirm-marker'), cancelMarker: document.querySelector('#cancel-marker')
 };
 
-const DISPLAY_LIMIT = 30;
+let DISPLAY_LIMIT = 30;
+const environments = {
+  direct: { depth: 1, limit: 30, label: 'Direktes Umfeld', controlLabel: 'Direkt' },
+  near: { depth: 2, limit: 45, label: 'Nahes Umfeld', controlLabel: 'Nah' },
+  wide: { depth: 3, limit: 60, label: 'Weites Umfeld', controlLabel: 'Weit' }
+};
+const environmentKeys = Object.keys(environments);
+const readerPage = document.documentElement.dataset.page === 'reader';
+const verzettelnPage = document.documentElement.dataset.page === 'verzetteln';
+const readerNoteId = new URLSearchParams(location.search).get('id');
+const inventoryFilterFromUrl = new URLSearchParams(location.search).get('bestand');
+const graphSearch = document.querySelector('#graph-search');
+const graphKind = document.querySelector('#graph-kind');
+const graphHistory = [];
 let graph;
 let nodesById;
 let adjacency;
@@ -26,26 +46,54 @@ let graphCanvas;
 let activeSeedId = null;
 let activeFilterId = null;
 let filters = [];
-let currentDepth = Number(elements.graphDepth.value);
+let environmentIndex = 0;
+let currentEnvironment = environments[environmentKeys[environmentIndex]];
+let currentDepth = currentEnvironment.depth;
 let currentNote = null;
 let editDirty = false;
+let selectedReaderTarget = null;
+let lastReaderSelection = null;
+let pendingSaveReason = 'Manuelle Änderung im Zettelkasten-Editor';
+let inventoryVisibleLimit = 90;
 
 try {
   await loadGraph();
+  if (readerPage) await openReaderFromUrl();
 } catch (error) {
   elements.summary.textContent = `Index konnte nicht geladen werden: ${error.message}`;
 }
 
 elements.search.addEventListener('input', () => { activeSeedId = null; updateView(); });
+graphSearch.addEventListener('input', () => {
+  if (!graph) return;
+  const query = graphSearch.value.trim().toLocaleLowerCase('de');
+  const matches = query ? graph.nodes.filter(node => searchable(node).includes(query)) : [];
+  document.querySelector('#graph-search-results').replaceChildren(...matches.slice(0, 12).map(node => {
+    const button = document.createElement('button');
+    button.type = 'button'; button.textContent = `${node.title} · ${node.vault}`;
+    button.addEventListener('click', () => { focusGraph(node); graphSearch.value = ''; document.querySelector('#graph-search-results').replaceChildren(); });
+    return button;
+  }));
+  if (query && !matches.length) document.querySelector('#graph-search-results').textContent = 'Keine passenden Zettel.';
+});
+graphKind.addEventListener('change', () => { if (graph) updateView(); });
+document.querySelector('#graph-back').addEventListener('click', () => { const previous = nodesById.get(graphHistory.pop()); if (previous) focusGraph(previous, false); });
+document.querySelector('#graph-read').addEventListener('click', () => { const node = nodesById?.get(activeSeedId); if (node) openReader(node); });
 elements.newsWindow.addEventListener('change', renderNews);
 elements.closeNote.addEventListener('click', closeReader);
-elements.graphDepth.addEventListener('input', () => {
-  currentDepth = Number(elements.graphDepth.value);
-  elements.depthValue.value = `${currentDepth} ${currentDepth === 1 ? 'Ebene' : 'Ebenen'}`;
+elements.graphEnvironmentDown.addEventListener('click', () => selectEnvironment(environmentIndex - 1));
+elements.graphEnvironmentUp.addEventListener('click', () => selectEnvironment(environmentIndex + 1));
+function selectEnvironment(index) {
+  environmentIndex = Math.max(0, Math.min(environmentKeys.length - 1, index));
+  currentEnvironment = environments[environmentKeys[environmentIndex]];
+  currentDepth = currentEnvironment.depth;
+  DISPLAY_LIMIT = currentEnvironment.limit;
+  elements.graphEnvironmentLabel.value = currentEnvironment.controlLabel;
+  elements.graphEnvironmentDown.disabled = environmentIndex === 0;
+  elements.graphEnvironmentUp.disabled = environmentIndex === environmentKeys.length - 1;
   updateView();
-});
+}
 elements.editNote.addEventListener('click', startEditing);
-elements.quickAddMarker.addEventListener('click', () => { startEditing(); insertAddMarker(); });
 elements.cancelEdit.addEventListener('click', cancelEditing);
 elements.insertAddMarker.addEventListener('click', insertAddMarker);
 elements.previewNote.addEventListener('click', showChangePreview);
@@ -55,6 +103,20 @@ elements.noteEditor.addEventListener('input', () => {
   elements.editorStatus.textContent = editDirty ? 'Ungespeicherte Änderung.' : '';
 });
 elements.confirmSave.addEventListener('click', saveCurrentNote);
+elements.confirmMarker.addEventListener('click', saveCurrentNote);
+elements.cancelMarker.addEventListener('click', cancelMarkerSelection);
+elements.noteContent.addEventListener('contextmenu', openMarkerContextMenu);
+elements.noteContent.addEventListener('pointerdown', (event) => { if (event.button === 2) rememberReaderSelection(); });
+elements.noteContent.addEventListener('mouseup', rememberReaderSelection);
+elements.noteContent.addEventListener('keyup', rememberReaderSelection);
+document.addEventListener('selectionchange', rememberReaderSelection);
+document.addEventListener('pointerdown', (event) => { if (!elements.markerContextMenu.hidden && !elements.markerContextMenu.contains(event.target)) closeMarkerContextMenu(); });
+document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closeMarkerContextMenu(); });
+window.addEventListener('resize', closeMarkerContextMenu);
+elements.inventoryLoadMore.addEventListener('click', () => {
+  inventoryVisibleLimit += 90;
+  renderInventoryList();
+});
 
 async function readJson(response) {
   const payload = await response.json();
@@ -70,6 +132,8 @@ async function loadGraph() {
   renderSourceStatus();
   renderStructureStats();
   renderNews();
+  renderCareLists();
+  renderInventoryList();
 }
 
 function renderSourceStatus() {
@@ -112,12 +176,14 @@ function renderNewsList(container, nodes, label, dateField) {
     meta.className = 'news-item-meta';
     meta.textContent = `${label} ${node[dateField]} · ${node.vault}`;
     button.append(title, meta);
-    button.addEventListener('click', () => enterNode(node));
+    button.addEventListener('click', () => openReader(node));
     return button;
   }));
 }
 
 function updateView() {
+  if (!graph || !graphCanvas) return;
+  adjacency = makeAdjacency(graph.edges.filter(edge => graphKind.value === 'all' || edge.kind === graphKind.value));
   const query = elements.search.value.trim().toLocaleLowerCase('de');
   const activeFilter = filters.find((filter) => filter.id === activeFilterId) ?? null;
   const directFocus = !query && !activeFilter && activeSeedId ? nodesById.get(activeSeedId) : null;
@@ -152,9 +218,13 @@ function updateView() {
     parents
   );
   const depthLabel = `${currentDepth} ${currentDepth === 1 ? 'Ebene' : 'Ebenen'}`;
-  const prefix = activeSeed ? `Einstieg: ${activeSeed.title} · ${depthLabel} tief` : 'Suche oder wähle eine Struktur, um in die Rabbit Hole Navigation einzusteigen';
-  const truncation = visibleIds.length === DISPLAY_LIMIT ? ` · Darstellung auf ${DISPLAY_LIMIT} Knoten begrenzt` : '';
-  elements.graphSummary.textContent = activeSeed ? `${prefix} · ${nodes.length} sichtbare Räume${truncation}. Klicke einen Raum, um den Zettel zu öffnen.` : prefix;
+  const prefix = activeSeed ? `Einstieg: ${activeSeed.title} · ${currentEnvironment.label}` : 'Suche oder wähle eine Struktur, um in die Rabbit Hole Navigation einzusteigen';
+  const truncation = expansion.total > nodes.length ? ` · ${expansion.total - nodes.length} weitere Räume ausgeblendet – Umfeld erweitern oder einen Nachbarn fokussieren` : '';
+  elements.graphSummary.textContent = activeSeed ? `${currentEnvironment.label} · ${depthLabel} · ${nodes.length} von ${expansion.total} erreichbaren Räumen · ${edges.length} gerichtete Beziehungen${truncation}.` : prefix;
+  document.querySelector('#graph-focus').textContent = activeSeed ? `${activeSeed.title} · ${activeSeed.vault}` : 'Wähle einen Gedanken als Einstieg';
+  document.querySelector('#graph-back').disabled = !graphHistory.length;
+  document.querySelector('#graph-read').disabled = !activeSeed;
+  renderGraphList(nodes, edges, expansion);
   updateFilterCounts(query);
   for (const button of document.querySelectorAll('.stat-filter')) button.setAttribute('aria-pressed', String(button.dataset.filterId === activeFilterId));
 }
@@ -162,6 +232,7 @@ function updateView() {
 function visibleGraphEdges(visibleIds, parents) {
   const combined = new Map();
   for (const edge of graph.edges) {
+    if (graphKind.value !== 'all' && edge.kind !== graphKind.value) continue;
     if (!edge.target || !visibleIds.has(edge.source) || !visibleIds.has(edge.target)) continue;
     const key = `${edge.source}\u0000${edge.target}`;
     const isTreePassage = parents.get(edge.target) === edge.source || parents.get(edge.source) === edge.target;
@@ -198,19 +269,6 @@ function makeFilters() {
       label: formatArea(area),
       matches: (node) => nodeAreas(node).includes(area)
     }));
-  const markerOccurrences = new Map();
-  for (const node of graph.nodes) {
-    for (const marker of node.markers) markerOccurrences.set(marker, (markerOccurrences.get(marker) ?? 0) + (node.markerCounts?.[marker] ?? 1));
-  }
-  const markerFilters = [...markerOccurrences]
-    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0], 'de'))
-    .map(([marker]) => ({
-      id: `marker:${marker}`,
-      group: 'marker',
-      label: marker,
-      detail: (nodes) => `${nodes.reduce((sum, node) => sum + (node.markerCounts?.[marker] ?? 0), 0)} Vorkommen`,
-      matches: (node) => node.markers.includes(marker)
-    }));
   return [
     { id: 'all', group: 'inventory', label: 'Alle Zettel', matches: () => true },
     { id: 'note', group: 'inventory', label: 'Zettel (Typ)', matches: typeIs('zettel') },
@@ -224,17 +282,7 @@ function makeFilters() {
     { id: 'milestone', group: 'inventory', label: 'Milestones', matches: typeIs('milestone') },
     { id: 'recent', group: 'inventory', label: 'Neu · letzte 10 Tage', matches: (node) => wasAddedWithinLastDays(node, 10) },
     ...sourceFilters,
-    ...areaFilters,
-    ...markerFilters,
-    { id: 'draft', group: 'care', label: 'Rohlinge', matches: statusIs('rohling') },
-    { id: 'hypothesis', group: 'care', label: 'Hypothesen', matches: statusIs('hypothese') },
-    { id: 'empty', group: 'care', label: 'Leere Textkörper', matches: (node) => node.emptyBody },
-    { id: 'markers', group: 'care', label: 'Zettel mit @-Markern', detail: (nodes) => `${nodes.reduce((sum, node) => sum + node.markerCount, 0)} Vorkommen`, matches: (node) => node.markerCount > 0 },
-    { id: 'missing-type', group: 'care', label: 'Ohne Typ', matches: (node) => !normalize(node.type) },
-    { id: 'missing-status', group: 'care', label: 'Ohne Status', matches: (node) => !normalize(node.status) },
-    { id: 'missing-area', group: 'care', label: 'Ohne Thema', matches: (node) => nodeAreas(node).length === 0 },
-    { id: 'unresolved', group: 'care', label: 'Mit unaufgelösten Links', detail: (nodes) => `${nodes.reduce((sum, node) => sum + (unresolvedCounts.get(node.id) ?? 0), 0)} Links`, matches: (node) => unresolvedSources.has(node.id) },
-    { id: 'isolated', group: 'care', label: 'Isolierte Zettel', matches: (node) => isolatedNodes.has(node.id) }
+    ...areaFilters
   ];
 }
 
@@ -273,8 +321,7 @@ function formatArea(area) {
 
 function renderStructureStats() {
   for (const [group, container] of [
-    ['inventory', elements.inventoryStats], ['source', elements.sourceStats], ['theme', elements.themeStats],
-    ['marker', elements.markerStats], ['care', elements.careStats]
+    ['inventory', elements.inventoryStats], ['source', elements.sourceStats], ['theme', elements.themeStats]
   ]) {
     container.replaceChildren(...filters.filter((filter) => filter.group === group).map((filter) => {
       const button = document.createElement('button');
@@ -283,6 +330,10 @@ function renderStructureStats() {
       button.dataset.filterId = filter.id;
       button.setAttribute('aria-pressed', 'false');
       button.addEventListener('click', () => {
+        if (filter.group === 'inventory') {
+          location.assign(`/verzetteln?bestand=${encodeURIComponent(filter.id)}`);
+          return;
+        }
         activeFilterId = activeFilterId === filter.id ? null : filter.id;
         activeSeedId = null;
         updateView();
@@ -292,13 +343,146 @@ function renderStructureStats() {
   }
 }
 
+function renderInventoryList() {
+  if (!verzettelnPage || !graph) return;
+  const inventoryFilters = filters.filter((filter) => filter.group === 'inventory');
+  const selected = inventoryFilters.find((filter) => filter.id === inventoryFilterFromUrl) ?? inventoryFilters.find((filter) => filter.id === 'all');
+  if (!selected) return;
+  const connectionCounts = connectionCountsForGraph();
+  const matches = graph.nodes.filter(selected.matches)
+    .sort((left, right) => left.title.localeCompare(right.title, 'de'));
+  const visible = matches.slice(0, inventoryVisibleLimit);
+  elements.inventoryListHeading.textContent = selected.label;
+  elements.inventoryListSummary.textContent = `${matches.length.toLocaleString('de-DE')} Zettel · Titel, Herkunft, Pfad und Pflege-Signale auf einen Blick`;
+  elements.inventoryListFilters.replaceChildren(...inventoryFilters.map((filter) => {
+    const link = document.createElement('a');
+    link.className = 'inventory-filter';
+    link.href = `/verzetteln?bestand=${encodeURIComponent(filter.id)}`;
+    link.textContent = filter.label;
+    link.setAttribute('aria-current', String(filter.id === selected.id ? 'page' : false));
+    return link;
+  }));
+  if (!visible.length) {
+    const empty = document.createElement('p');
+    empty.className = 'news-empty';
+    empty.textContent = 'Keine Zettel in dieser Bestandsgruppe.';
+    elements.inventoryList.replaceChildren(empty);
+  } else {
+    elements.inventoryList.replaceChildren(...visible.map((node) => createInventoryItem(node, connectionCounts.get(node.id) ?? 0)));
+  }
+  const remaining = matches.length - visible.length;
+  elements.inventoryLoadMore.hidden = remaining <= 0;
+  elements.inventoryLoadMore.textContent = remaining > 0 ? `${Math.min(remaining, 90)} weitere von ${remaining.toLocaleString('de-DE')} Zetteln laden` : '';
+}
+
+function connectionCountsForGraph() {
+  const counts = new Map(graph.nodes.map((node) => [node.id, 0]));
+  for (const edge of graph.edges) {
+    if (!edge.target) continue;
+    counts.set(edge.source, (counts.get(edge.source) ?? 0) + 1);
+    counts.set(edge.target, (counts.get(edge.target) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function createInventoryItem(node, connections) {
+  const item = document.createElement('article');
+  item.className = 'inventory-item';
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'inventory-item-open';
+  const title = document.createElement('strong');
+  title.textContent = node.title;
+  const path = document.createElement('span');
+  path.className = 'inventory-item-path';
+  path.textContent = `${node.vault} · ${node.path}`;
+  const facts = document.createElement('span');
+  facts.className = 'inventory-item-facts';
+  const labels = [node.type, node.status, ...nodeAreas(node).map(formatArea), ...node.tags.slice(0, 3)].filter(Boolean);
+  facts.textContent = labels.length ? labels.join(' · ') : 'ohne Klassifikation';
+  button.append(title, path, facts);
+  button.addEventListener('click', () => openReader(node));
+  const signals = document.createElement('div');
+  signals.className = 'inventory-item-signals';
+  for (const label of [
+    `${connections} ${connections === 1 ? 'Verbindung' : 'Verbindungen'}`,
+    node.markerCount ? `${node.markerCount} ${node.markerCount === 1 ? 'Marker' : 'Marker'}` : null,
+    node.created ? `neu ${node.created}` : null,
+    node.modified ? `geändert ${node.modified}` : null,
+    node.emptyBody ? 'leerer Textkörper' : null
+  ].filter(Boolean)) {
+    const signal = document.createElement('span');
+    signal.textContent = label;
+    signals.append(signal);
+  }
+  item.append(button, signals);
+  return item;
+}
+
+function renderCareLists() {
+  const connectionCounts = connectionCountsForGraph();
+  const unresolvedCounts = new Map();
+  for (const edge of graph.edges) {
+    if (!edge.target) {
+      unresolvedCounts.set(edge.source, (unresolvedCounts.get(edge.source) ?? 0) + 1);
+    }
+  }
+  const lowLinks = graph.nodes.filter((node) => (connectionCounts.get(node.id) ?? 0) < 3)
+    .sort((left, right) => (connectionCounts.get(left.id) ?? 0) - (connectionCounts.get(right.id) ?? 0) || left.title.localeCompare(right.title, 'de'));
+  const marked = graph.nodes.filter((node) => node.markerCount > 0)
+    .sort((left, right) => right.markerCount - left.markerCount || left.title.localeCompare(right.title, 'de'));
+  const needsCare = graph.nodes.filter((node) =>
+    ['rohling', 'hypothese'].includes(normalize(node.status)) || node.emptyBody || !normalize(node.type) || !normalize(node.status)
+    || nodeAreas(node).length === 0 || unresolvedCounts.has(node.id)
+  ).sort((left, right) => left.title.localeCompare(right.title, 'de'));
+  renderCareList(elements.lowLinks, elements.lowLinksSummary, lowLinks, 'weniger als 3 explizite Verbindungen', (node) => `${connectionCounts.get(node.id) ?? 0} Verbindungen`);
+  renderCareList(elements.markedNotes, elements.markedNotesSummary, marked, 'mit @-Markern', (node) => `${node.markerCount} ${node.markerCount === 1 ? 'Marker' : 'Marker'}`);
+  renderCareList(elements.careNotes, elements.careNotesSummary, needsCare, 'mit Pflegehinweisen', (node) => careReasons(node, unresolvedCounts));
+}
+
+function careReasons(node, unresolvedCounts) {
+  const reasons = [];
+  if (['rohling', 'hypothese'].includes(normalize(node.status))) reasons.push(node.status);
+  if (node.emptyBody) reasons.push('leerer Textkörper');
+  if (!normalize(node.type)) reasons.push('ohne Typ');
+  if (!normalize(node.status)) reasons.push('ohne Status');
+  if (!nodeAreas(node).length) reasons.push('ohne Thema');
+  if (unresolvedCounts.has(node.id)) reasons.push(`${unresolvedCounts.get(node.id)} unaufgelöste Links`);
+  return reasons.join(' · ');
+}
+
+function renderCareList(container, summary, nodes, description, detail) {
+  summary.textContent = `${nodes.length} Zettel ${description}`;
+  if (!nodes.length) {
+    const empty = document.createElement('p');
+    empty.className = 'news-empty';
+    empty.textContent = 'Keine Einträge.';
+    container.replaceChildren(empty);
+    return;
+  }
+  container.replaceChildren(...nodes.map((node) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'care-item';
+    const title = document.createElement('span');
+    title.className = 'care-item-title';
+    title.textContent = node.title;
+    const meta = document.createElement('span');
+    meta.className = 'care-item-meta';
+    meta.textContent = `${detail(node)} · ${node.vault}`;
+    button.append(title, meta);
+    button.addEventListener('click', () => openReader(node));
+    return button;
+  }));
+}
+
 function updateFilterCounts(query) {
   const candidates = query ? graph.nodes.filter((node) => searchable(node).includes(query)) : graph.nodes;
   for (const filter of filters) {
     const matches = candidates.filter(filter.matches);
     const detail = typeof filter.detail === 'function' ? filter.detail(matches) : filter.detail;
     const button = document.querySelector(`.stat-filter[data-filter-id="${CSS.escape(filter.id)}"]`);
-    button.textContent = `${matches.length} ${filter.label}${detail ? ` · ${detail}` : ''}`;
+    if (button) button.textContent = `${matches.length} ${filter.label}${detail ? ` · ${detail}` : ''}`;
   }
 }
 
@@ -308,7 +492,7 @@ function renderResults(matches, activeId) {
     result.querySelector('.result-title').textContent = node.title;
     result.querySelector('.result-meta').textContent = `${node.vault} · ${node.path}`;
     result.setAttribute('aria-pressed', String(node.id === activeId));
-    result.addEventListener('click', () => { activeSeedId = node.id; updateView(); openNote(node); });
+    result.addEventListener('click', () => openReader(node));
     return result;
   }));
 }
@@ -332,36 +516,220 @@ function expand(seedIds, depth) {
     const degree = (adjacency.get(right)?.size ?? 0) - (adjacency.get(left)?.size ?? 0);
     return degree || nodesById.get(left).title.localeCompare(nodesById.get(right).title, 'de');
   });
-  for (const seedId of seedIds) {
-    const entrances = rankedNeighbors(seedId).slice(0, 4);
-    for (const entrance of entrances) {
-      if (seen.size === DISPLAY_LIMIT) break;
-      let parent = seedId;
-      let current = entrance;
-      let level = 1;
-      while (current && level <= depth && seen.size < DISPLAY_LIMIT) {
-        if (!seen.has(current)) seen.set(current, { level, parent });
-        parent = current;
-        current = rankedNeighbors(current).find((neighbor) => !seen.has(neighbor));
-        level += 1;
-      }
-    }
-  }
   const queue = [...seen].map(([id, value]) => ({ id, level: value.level }));
-  while (queue.length && seen.size < DISPLAY_LIMIT) {
-    const { id, level } = queue.shift();
+  for (let cursor = 0; cursor < queue.length; cursor += 1) {
+    const { id, level } = queue[cursor];
     if (level === depth) continue;
     const neighbors = rankedNeighbors(id);
-    let followed = 0;
     for (const neighbor of neighbors) {
       if (seen.has(neighbor)) continue;
       seen.set(neighbor, { level: level + 1, parent: id });
       queue.push({ id: neighbor, level: level + 1 });
-      followed += 1;
-      if (seen.size === DISPLAY_LIMIT || followed === 2) break;
     }
   }
-  return [...seen].map(([id, value]) => ({ id, ...value }));
+  const result = [...seen].slice(0, DISPLAY_LIMIT).map(([id, value]) => ({ id, ...value }));
+  result.total = seen.size;
+  return result;
+}
+
+function focusGraph(node, remember = true) {
+  if (remember && activeSeedId && activeSeedId !== node.id) graphHistory.push(activeSeedId);
+  elements.search.value = '';
+  activeFilterId = null;
+  activeSeedId = node.id;
+  selectEnvironment(environmentIndex);
+}
+
+function renderGraphList(nodes, edges, expansion) {
+  const levels = new Map(expansion.map(entry => [entry.id, entry.level]));
+  document.querySelector('#graph-node-list').replaceChildren(...nodes.map(node => {
+    const row = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = `${node.title} · ${node.vault} · Distanz ${levels.get(node.id)}`;
+    const focus = document.createElement('button'); focus.type = 'button'; focus.textContent = 'Hier weiter erkunden';
+    focus.addEventListener('click', () => focusGraph(node));
+    const read = document.createElement('button'); read.type = 'button'; read.textContent = 'Zettel lesen'; read.addEventListener('click', () => openReader(node));
+    const list = document.createElement('ul');
+    for (const edge of edges.filter(edge => edge.source === node.id || edge.target === node.id)) {
+      const item = document.createElement('li');
+      item.textContent = `${nodesById.get(edge.source).title} → ${nodesById.get(edge.target).title} · ${edge.kinds.join(' + ')} · ${edge.weight} Linkvorkommen`;
+      list.append(item);
+    }
+    row.append(summary, focus, read, list); return row;
+  }));
+}
+
+function openMarkerContextMenu(event) {
+  if (!currentNote || event.target.closest('pre, code')) return;
+  const selection = window.getSelection();
+  let target = null;
+  if (selection && !selection.isCollapsed && elements.noteContent.contains(selection.anchorNode) && elements.noteContent.contains(selection.focusNode)) {
+    const candidate = markerTargetFromRange(selection.getRangeAt(0), selection.toString());
+    if (candidate && pointTouchesTarget(candidate, event.clientX, event.clientY)) target = candidate;
+  }
+  if (!target && lastReaderSelection && pointTouchesTarget(lastReaderSelection, event.clientX, event.clientY)) target = lastReaderSelection;
+  if (!target) target = markerTargetFromPoint(event.clientX, event.clientY);
+  if (!target) return;
+
+  event.preventDefault();
+  selectedReaderTarget = target;
+  elements.markerContextTarget.textContent = target.text ? `„${truncate(target.text, 72)}“` : 'An dieser Textstelle';
+  elements.markerContextStatus.textContent = '';
+  elements.markerContextMenu.hidden = false;
+  const rectangle = elements.markerContextMenu.getBoundingClientRect();
+  const anchor = event.clientX || event.clientY ? { x: event.clientX, y: event.clientY } : target.rectangle;
+  elements.markerContextMenu.style.left = `${Math.max(8, Math.min(anchor.x, window.innerWidth - rectangle.width - 8))}px`;
+  elements.markerContextMenu.style.top = `${Math.max(8, Math.min(anchor.y, window.innerHeight - rectangle.height - 8))}px`;
+  elements.markerContextButtons.querySelector('button')?.focus();
+}
+
+function markerTargetFromRange(range, selectedText) {
+  const fragments = [...elements.noteContent.querySelectorAll('.source-fragment')].filter((fragment) => {
+    try { return range.intersectsNode(fragment); } catch { return false; }
+  });
+  if (!fragments.length) return null;
+  const first = fragments[0];
+  const last = fragments.at(-1);
+  const start = sourceBoundary(first, range.startContainer, range.startOffset, false);
+  const end = sourceBoundary(last, range.endContainer, range.endOffset, true);
+  if (!Number.isInteger(start) || !Number.isInteger(end) || end < start) return null;
+  const rectangle = range.getBoundingClientRect();
+  const rectangles = [...range.getClientRects()].map((item) => ({ left: item.left, right: item.right, top: item.top, bottom: item.bottom }));
+  return {
+    start,
+    end,
+    text: selectedText.replace(/\s+/g, ' ').trim(),
+    rectangle: { x: rectangle.left, y: rectangle.bottom, left: rectangle.left, right: rectangle.right, top: rectangle.top, bottom: rectangle.bottom },
+    rectangles
+  };
+}
+
+function rememberReaderSelection() {
+  const selection = window.getSelection();
+  if (!selection || selection.isCollapsed || !elements.noteContent.contains(selection.anchorNode) || !elements.noteContent.contains(selection.focusNode)) return;
+  lastReaderSelection = markerTargetFromRange(selection.getRangeAt(0), selection.toString());
+}
+
+function pointTouchesTarget(target, x, y) {
+  const rectangles = target?.rectangles?.length ? target.rectangles : target?.rectangle ? [target.rectangle] : [];
+  return rectangles.some((rectangle) => x >= rectangle.left - 2 && x <= rectangle.right + 2 && y >= rectangle.top - 2 && y <= rectangle.bottom + 2);
+}
+
+function sourceBoundary(fragment, container, offset, endBoundary) {
+  const start = Number(fragment.dataset.sourceStart);
+  const end = Number(fragment.dataset.sourceEnd);
+  if (fragment.dataset.sourceAtomic === 'true') return endBoundary ? end : start;
+  if (container.nodeType === Node.TEXT_NODE && fragment.contains(container)) return Math.min(end, start + offset);
+  return endBoundary ? end : start;
+}
+
+function markerTargetFromPoint(x, y) {
+  const caret = document.caretPositionFromPoint?.(x, y);
+  const fallback = !caret ? document.caretRangeFromPoint?.(x, y) : null;
+  const node = caret?.offsetNode ?? fallback?.startContainer;
+  const offset = caret?.offset ?? fallback?.startOffset;
+  if (!node || !Number.isInteger(offset)) return null;
+  const parent = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+  const fragment = parent?.closest?.('.source-fragment');
+  if (!fragment || !elements.noteContent.contains(fragment)) return null;
+
+  const sourceStart = Number(fragment.dataset.sourceStart);
+  const sourceEnd = Number(fragment.dataset.sourceEnd);
+  if (fragment.dataset.sourceAtomic === 'true' || node.nodeType !== Node.TEXT_NODE) {
+    selectDomContents(fragment);
+    const rectangle = fragment.getBoundingClientRect();
+    return { start: sourceStart, end: sourceEnd, text: fragment.textContent.trim(), rectangle: { x: rectangle.left, y: rectangle.bottom }, rectangles: [{ left: rectangle.left, right: rectangle.right, top: rectangle.top, bottom: rectangle.bottom }] };
+  }
+
+  const text = node.textContent;
+  let start = Math.min(offset, text.length);
+  let end = start;
+  const isWordCharacter = (character) => /[\p{L}\p{N}_-]/u.test(character ?? '');
+  if (isWordCharacter(text[start]) || isWordCharacter(text[start - 1])) {
+    if (!isWordCharacter(text[start]) && isWordCharacter(text[start - 1])) start -= 1;
+    end = start + 1;
+    while (start > 0 && isWordCharacter(text[start - 1])) start -= 1;
+    while (end < text.length && isWordCharacter(text[end])) end += 1;
+  }
+  selectDomText(node, start, end);
+  const range = window.getSelection()?.rangeCount ? window.getSelection().getRangeAt(0) : null;
+  const rectangle = range?.getBoundingClientRect() ?? fragment.getBoundingClientRect();
+  return { start: sourceStart + start, end: sourceStart + end, text: text.slice(start, end), rectangle: { x: rectangle.left, y: rectangle.bottom }, rectangles: [{ left: rectangle.left, right: rectangle.right, top: rectangle.top, bottom: rectangle.bottom }] };
+}
+
+function selectDomContents(element) {
+  const range = document.createRange();
+  range.selectNodeContents(element);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+function selectDomText(node, start, end) {
+  const range = document.createRange();
+  range.setStart(node, start);
+  range.setEnd(node, end);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+}
+
+function closeMarkerContextMenu() {
+  elements.markerContextMenu.hidden = true;
+  elements.markerContextStatus.textContent = '';
+}
+
+function hideMarkerSelection() {
+  selectedReaderTarget = null;
+  lastReaderSelection = null;
+  closeMarkerContextMenu();
+}
+
+function renderMarkerButtons() {
+  elements.markerContextButtons.replaceChildren(...MARKERS.map((marker) => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'marker-context-button';
+    button.setAttribute('role', 'menuitem');
+    const code = document.createElement('code');
+    code.textContent = marker.value;
+    const label = document.createElement('span');
+    label.textContent = marker.label;
+    button.title = marker.description;
+    button.append(code, label);
+    button.addEventListener('click', () => prepareMarkerForSelection(marker.value));
+    return button;
+  }));
+}
+
+function prepareMarkerForSelection(marker) {
+  if (!currentNote || !selectedReaderTarget) return;
+  if (markerAlreadyFollows(currentNote.content, selectedReaderTarget, marker)) {
+    elements.markerContextStatus.textContent = `${marker} steht bereits direkt hinter dieser Stelle.`;
+    return;
+  }
+  elements.noteEditor.value = insertMarkerAtTarget(currentNote.content, selectedReaderTarget, marker);
+  editDirty = true;
+  pendingSaveReason = `Marker ${marker} im Lesemodus gesetzt`;
+  const targetLabel = selectedReaderTarget.text ? `„${selectedReaderTarget.text}“` : 'Textstelle';
+  elements.markerPreviewSource.textContent = `${marker} · ${targetLabel}`;
+  elements.markerChangeDiff.textContent = makeChangeDiff(currentNote.content, elements.noteEditor.value);
+  elements.markerPreview.hidden = false;
+  closeMarkerContextMenu();
+  elements.markerPreview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function truncate(text, maximum) {
+  return text.length > maximum ? `${text.slice(0, maximum - 1)}…` : text;
+}
+
+function cancelMarkerSelection() {
+  elements.markerPreview.hidden = true;
+  elements.noteEditor.value = currentNote?.content ?? '';
+  editDirty = false;
+  selectedReaderTarget = null;
+  closeMarkerContextMenu();
+  pendingSaveReason = 'Manuelle Änderung im Zettelkasten-Editor';
 }
 
 async function openNote(node) {
@@ -375,6 +743,8 @@ async function openNote(node) {
   elements.explorationShell.classList.add('has-reader');
   elements.reader.setAttribute('aria-busy', 'true');
   setReaderMode('read');
+  hideMarkerSelection();
+  elements.markerPreview.hidden = true;
   elements.reader.scrollIntoView({ behavior: 'smooth', block: 'start' });
   try {
     const note = await fetch(`/api/note?id=${encodeURIComponent(node.id)}`).then(readJson);
@@ -388,8 +758,23 @@ async function openNote(node) {
   }
 }
 
+async function openReaderFromUrl() {
+  const node = readerNoteId ? nodesById.get(readerNoteId) : null;
+  if (node) { activeSeedId = node.id; return openNote(node); }
+  elements.reader.hidden = false;
+  elements.explorationShell.classList.add('has-reader');
+  elements.noteTitle.textContent = 'Zettel nicht gefunden';
+  elements.noteContent.textContent = 'Der angeforderte Zettel ist im aktuellen Index nicht vorhanden.';
+}
+
+function openReader(node) {
+  if (editDirty && !window.confirm('Ungespeicherte Änderungen verwerfen und einen anderen Zettel öffnen?')) return;
+  window.location.assign(`/lesen?id=${encodeURIComponent(node.id)}`);
+}
+
 function closeReader() {
   if (editDirty && !window.confirm('Ungespeicherte Änderungen verwerfen und den Leseraum schließen?')) return;
+  if (readerPage) { window.location.assign('/#rabbit-hole'); return; }
   setReaderMode('read');
   currentNote = null;
   elements.reader.hidden = true;
@@ -400,7 +785,6 @@ function setReaderMode(mode) {
   const editing = mode === 'edit';
   elements.readerMode.textContent = editing ? 'Bearbeitungsmodus' : 'Lesemodus';
   elements.editNote.hidden = editing;
-  elements.quickAddMarker.hidden = editing;
   elements.noteContent.hidden = editing;
   elements.editorPanel.hidden = !editing;
   if (!editing) {
@@ -476,8 +860,9 @@ function makeChangeDiff(previous, next) {
 }
 
 async function saveCurrentNote() {
-  if (!currentNote || elements.changePreview.hidden) return;
+  if (!currentNote || (elements.changePreview.hidden && elements.markerPreview.hidden)) return;
   elements.confirmSave.disabled = true;
+  elements.confirmMarker.disabled = true;
   elements.editorStatus.textContent = 'Bestätigte Änderung wird geschrieben …';
   try {
     const saved = await fetch('/api/note', {
@@ -487,7 +872,7 @@ async function saveCurrentNote() {
         noteId: currentNote.id,
         content: elements.noteEditor.value,
         expectedRevision: currentNote.revision,
-        reason: 'Manuelle Änderung im Zettelkasten-Editor',
+        reason: pendingSaveReason,
         confirmed: true
       })
     }).then(readJson);
@@ -495,6 +880,8 @@ async function saveCurrentNote() {
     renderMetadata(saved);
     renderNoteContent(saved.content, saved.vault);
     setReaderMode('read');
+    elements.markerPreview.hidden = true;
+    pendingSaveReason = 'Manuelle Änderung im Zettelkasten-Editor';
     await loadGraph();
     activeSeedId = saved.id;
     updateView();
@@ -502,6 +889,7 @@ async function saveCurrentNote() {
     elements.editorStatus.textContent = `Änderung nicht gespeichert: ${error.message}`;
   } finally {
     elements.confirmSave.disabled = false;
+    elements.confirmMarker.disabled = false;
   }
 }
 
@@ -517,6 +905,7 @@ function renderMetadata(note) {
 
 function renderNoteContent(content, vault) {
   elements.noteContent.replaceChildren();
+  renderMarkerButtons();
   if (!content?.trim()) {
     const empty = document.createElement('p');
     empty.className = 'empty-note';
@@ -525,14 +914,23 @@ function renderNoteContent(content, vault) {
     return;
   }
 
-  const lines = content.replace(/\r\n/g, '\n').split('\n');
+  const normalizedContent = content.replace(/\r\n/g, '\n');
+  let nextLineStart = 0;
+  const lines = normalizedContent.split('\n').map((text) => {
+    const line = { text, start: nextLineStart };
+    nextLineStart += text.length + 1;
+    return line;
+  });
   let paragraph = [];
   let list = null;
   let code = null;
   const flushParagraph = () => {
     if (!paragraph.length) return;
     const element = document.createElement('p');
-    appendInlineContent(element, paragraph.join(' '), vault);
+    paragraph.forEach((part, index) => {
+      if (index) element.append(document.createTextNode(' '));
+      appendInlineContent(element, part.text, vault, part.start);
+    });
     elements.noteContent.append(element);
     paragraph = [];
   };
@@ -541,25 +939,25 @@ function renderNoteContent(content, vault) {
     if (!code) return;
     const pre = document.createElement('pre');
     const element = document.createElement('code');
-    element.textContent = code.lines.join('\n');
+    element.textContent = code.lines.map((line) => line.text).join('\n');
     pre.append(element);
     elements.noteContent.append(pre);
     code = null;
   };
 
-  for (const line of lines) {
+  for (const { text: line, start: lineStart } of lines) {
     if (line.startsWith('```')) {
       flushParagraph(); flushList();
       if (code) flushCode(); else code = { lines: [] };
       continue;
     }
-    if (code) { code.lines.push(line); continue; }
+    if (code) { code.lines.push({ text: line, start: lineStart }); continue; }
     if (!line.trim()) { flushParagraph(); flushList(); continue; }
     const heading = line.match(/^(#{1,6})\s+(.+)$/);
     if (heading) {
       flushParagraph(); flushList();
       const element = document.createElement(`h${Math.min(heading[1].length + 2, 6)}`);
-      appendInlineContent(element, heading[2], vault);
+      appendInlineContent(element, heading[2], vault, lineStart + heading[1].length + 1);
       elements.noteContent.append(element);
       continue;
     }
@@ -572,7 +970,7 @@ function renderNoteContent(content, vault) {
         elements.noteContent.append(list);
       }
       const element = document.createElement('li');
-      appendInlineContent(element, item[3], vault);
+      appendInlineContent(element, item[3], vault, lineStart + line.indexOf(item[3]));
       list.append(element);
       continue;
     }
@@ -580,25 +978,26 @@ function renderNoteContent(content, vault) {
     if (quote) {
       flushParagraph(); flushList();
       const element = document.createElement('blockquote');
-      appendInlineContent(element, quote[1], vault);
+      appendInlineContent(element, quote[1], vault, lineStart + line.indexOf(quote[1]));
       elements.noteContent.append(element);
       continue;
     }
     if (list?.lastElementChild) {
-      appendInlineContent(list.lastElementChild, ` ${line.trim()}`, vault);
+      list.lastElementChild.append(document.createTextNode(' '));
+      appendInlineContent(list.lastElementChild, line.trim(), vault, lineStart + line.indexOf(line.trim()));
       continue;
     }
-    paragraph.push(line.trim());
+    paragraph.push({ text: line.trim(), start: lineStart + line.indexOf(line.trim()) });
   }
   flushParagraph();
   flushCode();
 }
 
-function appendInlineContent(parent, text, vault) {
+function appendInlineContent(parent, text, vault, sourceStart) {
   const pattern = /(!?\[\[[^\]]+\]\]|\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g;
   let cursor = 0;
   for (const match of text.matchAll(pattern)) {
-    parent.append(document.createTextNode(text.slice(cursor, match.index)));
+    appendSourceFragment(parent, text.slice(cursor, match.index), sourceStart + cursor);
     const token = match[0];
     if (token.includes('[[')) {
       const raw = token.replace(/^!?\[\[/, '').replace(/\]\]$/, '');
@@ -607,27 +1006,45 @@ function appendInlineContent(parent, text, vault) {
       const element = document.createElement(target ? 'button' : 'span');
       element.className = target ? 'wiki-link' : 'unresolved-link';
       element.textContent = label ?? targetText.split('#')[0];
+      markSourceFragment(element, sourceStart + match.index, sourceStart + match.index + token.length, true);
       if (target) {
         element.type = 'button';
-        element.addEventListener('click', () => enterNode(target));
+        element.addEventListener('click', () => openReader(target));
       }
       parent.append(element);
     } else if (token.startsWith('**')) {
       const element = document.createElement('strong');
-      appendInlineContent(element, token.slice(2, -2), vault);
+      appendInlineContent(element, token.slice(2, -2), vault, sourceStart + match.index + 2);
       parent.append(element);
     } else if (token.startsWith('*')) {
       const element = document.createElement('em');
-      appendInlineContent(element, token.slice(1, -1), vault);
+      appendInlineContent(element, token.slice(1, -1), vault, sourceStart + match.index + 1);
       parent.append(element);
     } else {
       const element = document.createElement('code');
       element.textContent = token.slice(1, -1);
+      markSourceFragment(element, sourceStart + match.index, sourceStart + match.index + token.length, true);
       parent.append(element);
     }
     cursor = match.index + token.length;
   }
-  parent.append(document.createTextNode(text.slice(cursor)));
+  appendSourceFragment(parent, text.slice(cursor), sourceStart + cursor);
+}
+
+function appendSourceFragment(parent, text, sourceStart) {
+  if (!text) return;
+  const fragment = document.createElement('span');
+  fragment.className = 'source-fragment';
+  fragment.textContent = text;
+  markSourceFragment(fragment, sourceStart, sourceStart + text.length, false);
+  parent.append(fragment);
+}
+
+function markSourceFragment(element, sourceStart, sourceEnd, atomic) {
+  element.classList.add('source-fragment');
+  element.dataset.sourceStart = String(sourceStart);
+  element.dataset.sourceEnd = String(sourceEnd);
+  element.dataset.sourceAtomic = String(atomic);
 }
 
 function findLinkedNode(rawTarget, vault) {
@@ -642,11 +1059,7 @@ function normalizeReference(value) {
 }
 
 function enterNode(node) {
-  elements.search.value = '';
-  activeFilterId = null;
-  activeSeedId = node.id;
-  updateView();
-  openNote(node);
+  openReader(node);
 }
 
 class GraphCanvas {
@@ -663,6 +1076,7 @@ class GraphCanvas {
     this.zoom = 1;
     this.pan = { x: 0, y: 0 };
     this.hoveredId = null;
+    this.keyboardId = null;
     this.drag = null;
     this.neighbors = new Map();
     new ResizeObserver(() => this.draw()).observe(canvas);
@@ -671,15 +1085,27 @@ class GraphCanvas {
     canvas.addEventListener('pointerup', (event) => this.endDrag(event));
     canvas.addEventListener('pointercancel', () => this.cancelDrag());
     canvas.addEventListener('pointerleave', () => { if (!this.drag) { this.hoveredId = null; this.draw(); } });
-    canvas.addEventListener('wheel', (event) => this.wheel(event), { passive: false });
     canvas.addEventListener('keydown', (event) => {
-      if (event.key === '+' || event.key === '=') { event.preventDefault(); this.zoomBy(1.2); }
-      if (event.key === '-') { event.preventDefault(); this.zoomBy(1 / 1.2); }
-      if (event.key === '0') { event.preventDefault(); this.resetView(); }
+      const moves = { ArrowLeft: [40, 0], ArrowRight: [-40, 0], ArrowUp: [0, 40], ArrowDown: [0, -40] };
+      if (moves[event.key]) {
+        event.preventDefault();
+        if (event.shiftKey) { this.pan.x += moves[event.key][0]; this.pan.y += moves[event.key][1]; this.draw(); }
+        else this.moveKeyboardFocus(event.key);
+      }
+      if (event.key === 'Enter' && this.keyboardId) {
+        event.preventDefault();
+        const selected = this.nodes.find((node) => node.id === this.keyboardId);
+        if (selected) this.onSelect(selected);
+      }
+      if (event.key === 'Escape') { event.preventDefault(); this.keyboardId = null; this.updateKeyboardDescription(); this.draw(); }
     });
   }
 
   render(nodes, edges, seeds, levels, parents) {
+    const signature = JSON.stringify([nodes.map(node => node.id), edges, seeds]);
+    if (signature === this.signature) return;
+    this.signature = signature;
+    this.hoveredId = null;
     this.nodes = nodes;
     this.edges = edges;
     this.seeds = new Set(seeds);
@@ -687,29 +1113,64 @@ class GraphCanvas {
     this.parents = parents;
     this.neighbors = makeAdjacency(edges);
     this.makeLayout();
+    this.keyboardId = this.nodes.some((node) => node.id === this.keyboardId) ? this.keyboardId : [...this.seeds][0] ?? null;
+    this.updateKeyboardDescription();
     this.resetView();
   }
 
+  updateKeyboardDescription() {
+    const selected = this.nodes.find((node) => node.id === this.keyboardId);
+    const selectedText = selected ? ` Ausgewählt: ${selected.title}.` : '';
+    this.canvas.setAttribute('aria-label', `Wissensgraph.${selectedText} Pfeiltasten wählen einen nahegelegenen Raum, Enter setzt ihn als Mittelpunkt, Umschalt plus Pfeiltasten verschiebt die Ansicht.`);
+  }
+
+  moveKeyboardFocus(key) {
+    const vectors = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+    const entries = this.renderedEntries ?? this.screenEntries();
+    if (!entries.length) return;
+    const current = entries.find((entry) => entry.node.id === this.keyboardId) ?? entries.find((entry) => this.seeds.has(entry.node.id)) ?? entries[0];
+    const [vectorX, vectorY] = vectors[key];
+    const candidate = entries
+      .filter((entry) => entry.node.id !== current.node.id)
+      .map((entry) => {
+        const deltaX = entry.x - current.x;
+        const deltaY = entry.y - current.y;
+        const forward = deltaX * vectorX + deltaY * vectorY;
+        const sideways = Math.abs(deltaX * vectorY - deltaY * vectorX);
+        return { entry, forward, score: sideways * 2 + forward };
+      })
+      .filter(({ forward }) => forward > 4)
+      .sort((left, right) => left.score - right.score || left.forward - right.forward)[0]?.entry;
+    if (!candidate) return;
+    this.keyboardId = candidate.node.id;
+    this.updateKeyboardDescription();
+    this.draw();
+  }
+
   makeLayout() {
-    const byLevel = new Map();
+    const children = new Map();
     for (const node of this.nodes) {
-      const level = this.levels.get(node.id) ?? 0;
-      const entries = byLevel.get(level) ?? [];
-      entries.push(node); byLevel.set(level, entries);
+      const parent = this.parents.get(node.id);
+      if (!parent) continue;
+      const entries = children.get(parent) ?? [];
+      entries.push(node.id); children.set(parent, entries);
     }
     this.layout = new Map();
-    for (const [level, levelNodes] of [...byLevel].sort((left, right) => left[0] - right[0])) {
-      levelNodes.sort((left, right) => {
-        const parentOrder = String(this.parents.get(left.id)).localeCompare(String(this.parents.get(right.id)), 'de');
-        return parentOrder || left.title.localeCompare(right.title, 'de');
-      });
-      levelNodes.forEach((node, index) => {
-        const phase = level % 2 ? -.5 : 0;
-        const angle = level === 0 ? 0 : (Math.PI * 2 * (index + phase) / levelNodes.length) - Math.PI / 2 + level * .16;
-        const ring = level === 0 ? 0 : 145 + (level - 1) * 142;
-        this.layout.set(node.id, { x: Math.cos(angle) * ring, y: Math.sin(angle) * ring });
-      });
-    }
+    const weight = id => Math.max(1, (children.get(id) ?? []).reduce((sum, child) => sum + weight(child), 0));
+    const place = (id, start, end) => {
+      const level = this.levels.get(id) ?? 0;
+      const angle = (start + end) / 2;
+      const ring = level === 0 ? 0 : 145 + (level - 1) * 142;
+      this.layout.set(id, { x: Math.cos(angle) * ring, y: Math.sin(angle) * ring });
+      const descendants = children.get(id) ?? [];
+      const total = descendants.reduce((sum, child) => sum + weight(child), 0);
+      let cursor = start;
+      for (const child of descendants) {
+        const next = cursor + (end - start) * weight(child) / total;
+        place(child, cursor, next); cursor = next;
+      }
+    };
+    for (const seed of this.seeds) place(seed, -Math.PI / 2, Math.PI * 1.5);
   }
 
   screenEntries() {
@@ -730,8 +1191,8 @@ class GraphCanvas {
 
   resetView() {
     const bounds = this.canvas.getBoundingClientRect();
-    const furthest = Math.max(220, ...[...this.layout.values()].map(({ x, y }) => Math.hypot(x, y)));
-    this.zoom = Math.max(.3, Math.min(.92, (Math.min(bounds.width, bounds.height) * .39) / furthest));
+    const furthest = Math.max(145, ...[...this.layout.values()].map(({ x, y }) => Math.hypot(x, y)));
+    this.zoom = Math.max(.1, Math.min(2.8, Math.min(bounds.width / 2 - 175, bounds.height / 2 - 90) / furthest));
     this.pan = { x: 0, y: 0 };
     this.draw();
   }
@@ -740,7 +1201,7 @@ class GraphCanvas {
     const bounds = this.canvas.getBoundingClientRect();
     const focus = anchor ?? { x: bounds.width / 2, y: bounds.height / 2 };
     const previous = this.zoom;
-    this.zoom = Math.max(.34, Math.min(2.8, this.zoom * factor));
+    this.zoom = Math.max(.1, Math.min(2.8, this.zoom * factor));
     const ratio = this.zoom / previous;
     this.pan.x = focus.x - bounds.width / 2 - (focus.x - bounds.width / 2 - this.pan.x) * ratio;
     this.pan.y = focus.y - bounds.height / 2 - (focus.y - bounds.height / 2 - this.pan.y) * ratio;
@@ -789,19 +1250,13 @@ class GraphCanvas {
     this.cancelDrag();
     if (!wasMoved) {
       const hit = this.hitTest(event);
-      if (hit) this.onSelect(hit.node);
+      if (hit) { this.keyboardId = hit.node.id; this.onSelect(hit.node); }
     }
   }
 
   cancelDrag() {
     this.drag = null;
     this.canvas.classList.remove('is-dragging');
-  }
-
-  wheel(event) {
-    event.preventDefault();
-    const bounds = this.canvas.getBoundingClientRect();
-    this.zoomBy(event.deltaY < 0 ? 1.12 : 1 / 1.12, { x: event.clientX - bounds.left, y: event.clientY - bounds.top });
   }
 
   labelLines(title) {
@@ -833,7 +1288,7 @@ class GraphCanvas {
     const width = Math.min(164, Math.max(62, ...lines.map((line) => this.context.measureText(line).width + 16)));
     const height = lines.length * 14 + 10;
     const worldPoint = this.layout.get(entry.node.id) ?? { x: 0 };
-    const opensLeft = worldPoint.x > 20;
+    const opensLeft = worldPoint.x < -20;
     const x = opensLeft ? entry.x - entry.radius - width - 7 : entry.x + entry.radius + 7;
     return { x, y: entry.y - height / 2, width, height, lines };
   }
@@ -898,6 +1353,7 @@ class GraphCanvas {
     this.canvas.width = bounds.width * ratio; this.canvas.height = bounds.height * ratio;
     this.context.setTransform(ratio, 0, 0, ratio, 0, 0); this.context.clearRect(0, 0, bounds.width, bounds.height);
     if (!this.nodes.length) {
+      this.renderedEntries = []; this.renderedLabels = new Map();
       this.context.fillStyle = '#5f6b62'; this.context.font = '500 16px Inter, system-ui, sans-serif'; this.context.textAlign = 'center';
       this.context.fillText('Dein Rabbit Hole beginnt mit einem Gedanken.', bounds.width / 2, bounds.height / 2 - 5);
       this.context.fillStyle = '#89938a'; this.context.font = '14px Inter, system-ui, sans-serif';
@@ -920,11 +1376,12 @@ class GraphCanvas {
     }
     this.context.restore();
     const byId = new Map(positions.map((entry) => [entry.node.id, entry]));
-    const focusIds = this.hoveredId ? new Set([this.hoveredId, ...(this.neighbors.get(this.hoveredId) ?? [])]) : null;
+    const focusId = this.hoveredId ?? this.keyboardId;
+    const focusIds = focusId ? new Set([focusId, ...(this.neighbors.get(focusId) ?? [])]) : null;
     for (const edge of this.edges) {
       const source = byId.get(edge.source); const target = byId.get(edge.target);
       if (!source || !target) continue;
-      const emphasized = focusIds && focusIds.has(source.node.id) && focusIds.has(target.node.id);
+      const emphasized = focusId && (source.node.id === focusId || target.node.id === focusId);
       this.context.save();
       this.context.globalAlpha = emphasized ? .9 : edge.tree ? .68 : .11;
       this.context.strokeStyle = edge.kinds.includes('related') ? '#b77b55' : '#8da397';
@@ -957,8 +1414,8 @@ class GraphCanvas {
       this.roundedRect(label.x, label.y, label.width, label.height, 7);
       this.context.fillStyle = this.seeds.has(entry.node.id) ? '#fffef8' : '#ffffffeb';
       this.context.fill();
-      this.context.strokeStyle = this.hoveredId === entry.node.id ? '#386b45' : '#d5dfd3';
-      this.context.lineWidth = this.hoveredId === entry.node.id ? 1.5 : 1;
+      this.context.strokeStyle = focusId === entry.node.id ? '#386b45' : '#d5dfd3';
+      this.context.lineWidth = focusId === entry.node.id ? 1.5 : 1;
       this.context.stroke();
       this.context.beginPath();
       this.context.fillStyle = entry.node.vault === 'SX' ? '#5e9b70' : '#658fc7';
@@ -978,9 +1435,9 @@ class GraphCanvas {
 }
 
 if (graph) {
-  graphCanvas = new GraphCanvas(elements.canvas, enterNode);
+  graphCanvas = new GraphCanvas(elements.canvas, focusGraph);
   elements.graphZoomOut.addEventListener('click', () => graphCanvas.zoomBy(1 / 1.2));
   elements.graphZoomIn.addEventListener('click', () => graphCanvas.zoomBy(1.2));
   elements.graphReset.addEventListener('click', () => graphCanvas.resetView());
-  updateView();
+  selectEnvironment(environmentIndex);
 }

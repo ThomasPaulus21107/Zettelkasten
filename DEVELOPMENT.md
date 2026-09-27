@@ -53,4 +53,4 @@ Danach wird ein Pull Request geöffnet, geprüft und zeitnah nach `main` gemergt
 
 ## Bisheriger Produktstand
 
-Die erste fokussierte Graphansicht ist als Early Prototype umgesetzt und nach `main` gemergt. Der geprüfte Stand mit Messwerten und Risiken steht in `PROJECT-STATUS.md`. Als nächstes wird `feature-request-verlaesslicher-graph-index.md` umgesetzt; erst danach folgen Filter, stabilere Layouts, Pfad-Historie und der Lesemodus. Pflege-, Generierungs- und Hosting-Funktionen bleiben bewusst spätere Feature Requests.
+Die erste fokussierte Graphansicht ist als Early Prototype umgesetzt und nach `main` gemergt. Der geprüfte Stand mit Messwerten und Risiken steht in `PROJECT-STATUS.md`. Als nächstes wird [`roadmap/feature-requests/verlaesslicher-graph-index.md`](roadmap/feature-requests/verlaesslicher-graph-index.md) umgesetzt; erst danach folgen Filter, stabilere Layouts, Pfad-Historie und der Lesemodus. Pflege-, Generierungs- und Hosting-Funktionen bleiben bewusst spätere Feature Requests.

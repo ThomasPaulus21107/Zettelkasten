@@ -1,2 +1,5 @@
 node_modules/
 vaults.config.json
+spikes/graph-renderers/dist/
+public/graph-app.js
+public/graph-app.js.map

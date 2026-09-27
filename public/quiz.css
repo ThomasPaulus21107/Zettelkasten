@@ -1,0 +1,73 @@
+:root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #17251b; background: #e9efe5; }
+* { box-sizing: border-box; }
+body { min-height: 100vh; margin: 0; background: radial-gradient(circle at 12% 8%, #f9f5dc 0 8%, transparent 28%), radial-gradient(circle at 88% 20%, #d6e8d3 0 8%, transparent 30%), #edf2e9; }
+button, a { font: inherit; }
+[hidden] { display: none !important; }
+.game-shell { width: min(100% - 2rem, 920px); margin: 0 auto; padding: 1.25rem 0 4rem; }
+.game-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: clamp(1.5rem, 4vw, 3rem); color: #59705e; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.game-nav a { color: #355b40; text-decoration: none; }
+.game-nav a:hover, .game-nav a:focus-visible { color: #143d20; outline: none; text-decoration: underline; text-underline-offset: .25rem; }
+.intro-card, .game-card, .result-card { border: 1px solid #cbd8c8; border-radius: 1.6rem; background: #fffefaeb; box-shadow: 0 28px 80px #2b4b2b1c; backdrop-filter: blur(12px); }
+.intro-card, .result-card { max-width: 760px; margin: 0 auto; padding: clamp(2rem, 5vw, 3.5rem); text-align: center; }
+.eyebrow { margin: 0 0 .8rem; color: #4d7957; font-size: .72rem; font-weight: 900; letter-spacing: .15em; text-transform: uppercase; }
+h1, h2, p { margin-top: 0; }
+h1 { max-width: 650px; margin: 0 auto 1.2rem; font-size: clamp(2.8rem, 7vw, 5rem); letter-spacing: -.07em; line-height: .94; }
+.lede { max-width: 590px; margin: 0 auto 1.5rem; color: #58665b; font-family: ui-serif, Georgia, serif; font-size: clamp(1rem, 2.4vw, 1.2rem); line-height: 1.65; }
+.rules { display: grid; grid-template-columns: repeat(3, 1fr); max-width: 520px; margin: 0 auto 1.6rem; border-block: 1px solid #dde5da; }
+.rules span { padding: 1rem .5rem; color: #67736a; font-size: .72rem; text-transform: uppercase; }
+.rules span + span { border-left: 1px solid #dde5da; }
+.rules strong { display: block; margin-bottom: .25rem; color: #2e5036; font-size: 1rem; }
+.primary-button { padding: .78rem 1.2rem; border: 1px solid #315e3b; border-radius: 999px; background: #315e3b; color: white; font-weight: 800; cursor: pointer; box-shadow: 0 8px 22px #315e3b25; }
+.primary-button:hover, .primary-button:focus-visible { background: #23492d; outline: 3px solid #88ad8e; outline-offset: 3px; transform: translateY(-1px); }
+.primary-button:disabled { opacity: .55; cursor: wait; }
+.load-status { min-height: 1.3rem; margin: .9rem 0 0; color: #7c5146; font-size: .82rem; }
+.game-card { overflow: hidden; }
+.scoreboard { display: grid; grid-template-columns: repeat(4, 1fr); background: #284d31; color: white; }
+.scoreboard div { padding: .9rem 1rem; text-align: center; }
+.scoreboard div + div { border-left: 1px solid #ffffff20; }
+.scoreboard span, .scoreboard strong { display: block; }
+.scoreboard span { margin-bottom: .22rem; color: #bed1c1; font-size: .65rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.scoreboard strong { font-size: 1.05rem; }
+.progress-track { height: .35rem; background: #dfe7dc; }
+.progress-track i { display: block; height: 100%; background: #d3a841; transition: width .25s ease; }
+.question-card { position: relative; padding: clamp(2.7rem, 7vw, 4rem); }
+.question-card h2 { max-width: 720px; margin-bottom: .8rem; font-size: clamp(1.65rem, 4vw, 2.7rem); letter-spacing: -.045em; line-height: 1.08; }
+.clue { min-height: 3.5rem; margin-bottom: 1.7rem; color: #536357; font-family: ui-serif, Georgia, serif; font-size: 1.05rem; line-height: 1.55; }
+.answers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; }
+.answer { display: grid; grid-template-columns: 2.1rem 1fr; align-items: center; gap: .75rem; min-height: 4.2rem; padding: .75rem 1rem; border: 1px solid #cad6c7; border-radius: .8rem; background: #fbfcf8; color: #26362a; text-align: left; cursor: pointer; transition: border-color .15s, transform .15s, background .15s; }
+.answer span { display: grid; width: 2.1rem; height: 2.1rem; place-items: center; border-radius: 50%; background: #e5ede2; color: #44614a; font-size: .78rem; font-weight: 900; }
+.answer strong { overflow-wrap: anywhere; }
+.answer:hover:not(:disabled), .answer:focus-visible { border-color: #62916b; background: #f1f7ee; outline: none; transform: translateY(-1px); }
+.answer.is-correct { border-color: #4f8a5e; background: #e8f5e7; box-shadow: inset 4px 0 #4f8a5e; }
+.answer.is-wrong { border-color: #ad6659; background: #faece8; box-shadow: inset 4px 0 #ad6659; }
+.answer:disabled { color: #56625a; cursor: default; }
+.feedback { margin-top: 1rem; padding: 1rem 1.1rem; border-radius: .8rem; background: #edf4ea; }
+.feedback[data-state="wrong"] { background: #f7ede8; }
+.feedback > strong { color: #2f633b; }
+.feedback[data-state="wrong"] > strong { color: #8b493f; }
+.feedback p { margin: .35rem 0 .9rem; color: #57635a; line-height: 1.5; }
+.feedback-actions { display: flex; align-items: center; justify-content: space-between; gap: .8rem; }
+.feedback-actions a, .secondary-link { color: #315e3b; font-weight: 800; text-underline-offset: .2rem; }
+.feedback-actions .primary-button { padding: .55rem .9rem; }
+.report-toggle { position: absolute; z-index: 2; top: 1rem; right: 1rem; padding: .42rem .7rem; border: 1px solid #b9c9b6; border-radius: 999px; background: #fff; color: #4f6253; font-size: .74rem; font-weight: 800; letter-spacing: .04em; cursor: pointer; }
+.report-toggle:hover, .report-toggle:focus-visible { border-color: #7d9c82; background: #f5f8f2; outline: 2px solid #a9c0aa; outline-offset: 2px; }
+.report-toggle:disabled { opacity: .65; cursor: default; }
+.report-panel { position: absolute; z-index: 3; top: 3.7rem; right: 1rem; width: min(30rem, calc(100% - 2rem)); padding: 1rem; border: 1px solid #c9d5c6; border-radius: .8rem; background: #fff; box-shadow: 0 16px 45px #2635292b; }
+.report-panel > strong { display: block; margin-bottom: .55rem; color: #435348; font-size: .82rem; }
+.report-reasons { display: flex; flex-wrap: wrap; gap: .4rem; }
+.report-reasons button { padding: .42rem .62rem; border: 1px solid #c5d1c2; border-radius: 999px; background: #fff; color: #536057; font-size: .76rem; cursor: pointer; }
+.report-reasons button:hover, .report-reasons button:focus-visible { border-color: #778f79; background: #f3f6f1; outline: none; }
+.report-reasons button:disabled { opacity: .5; cursor: wait; }
+.rework-note-form { display: grid; grid-template-columns: 1fr auto; gap: .45rem .6rem; margin-top: .9rem; padding-top: .8rem; border-top: 1px solid #e0e7de; }
+.rework-note-form label { grid-column: 1 / -1; color: #435348; font-size: .78rem; font-weight: 800; }
+.rework-note-form textarea { min-width: 0; resize: vertical; padding: .65rem .72rem; border: 1px solid #c5d1c2; border-radius: .6rem; color: #26362a; font: inherit; font-size: .8rem; line-height: 1.4; }
+.rework-note-form textarea:focus { border-color: #66866b; outline: 2px solid #b8cbb8; outline-offset: 1px; }
+.rework-note-form button { align-self: end; padding: .58rem .7rem; border: 1px solid #52745a; border-radius: .6rem; background: #315e3b; color: #fff; font-size: .76rem; font-weight: 800; cursor: pointer; }
+.rework-note-form button:disabled, .rework-note-form textarea:disabled { opacity: .55; cursor: default; }
+.report-status { min-height: 1.2em; margin: .6rem 0 0 !important; color: #526b56 !important; font-size: .78rem; }
+.result-mark { display: grid; width: 5rem; height: 5rem; place-items: center; margin: 0 auto 1.2rem; border: 1px solid #8fb096; border-radius: 50%; background: #eaf4e7; color: #3e6e49; font-size: 2.4rem; }
+.result-card h2 { margin-bottom: .7rem; font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: -.055em; }
+.result-score { color: #315e3b; font-size: 1.1rem; font-weight: 900; }
+.result-copy { max-width: 520px; margin: 0 auto 1.8rem; color: #5b685e; line-height: 1.6; }
+.result-card .secondary-link { display: block; margin-top: 1.1rem; font-size: .85rem; }
+@media (max-width: 620px) { .answers { grid-template-columns: 1fr; } .rules { grid-template-columns: 1fr; } .rules span + span { border-top: 1px solid #dde5da; border-left: 0; } .scoreboard div { padding-inline: .4rem; } .feedback-actions { align-items: stretch; flex-direction: column; } .feedback-actions .primary-button { width: 100%; } .rework-note-form { grid-template-columns: 1fr; } }

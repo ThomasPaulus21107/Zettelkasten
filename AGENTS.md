@@ -35,15 +35,21 @@ Der aktuelle Prototyp bildet diese Regeln noch nicht vollständig ab. Insbesonde
 - `PROJECT-STATUS.md` ist der geprüfte Übergabepunkt mit Ist-Stand, Risiken und Arbeitsreihenfolge.
 - `DEVELOPMENT.md` beschreibt Desktop-Fortsetzung, lokalen Start, Tests und Git-Ablauf.
 - `docs/vault-integration-contract.md` fasst den Integrationsvertrag der externen Vault-Quelle zusammen.
-- `feature-request-<name>.md` beschreibt jeweils ein abgrenzbares Vorhaben.
+- `roadmap/feature-requests/<name>.md` beschreibt jeweils ein abgrenzbares Vorhaben.
+- `roadmap/implemented-features/README.md` führt geprüfte, bereits nutzbare Fähigkeiten mit ihren Nachweisen auf.
 - Neue Annahmen werden als offen markiert, bis sie bestätigt oder umgesetzt sind.
 
-Bei einem neuen Projekt-Chat werden zuerst `AGENTS.md` und `PROJECT-STATUS.md` gelesen. Ohne eine anderslautende Nutzerpriorität ist `feature-request-verlaesslicher-graph-index.md` das nächste Increment.
+Bei einem neuen Projekt-Chat werden zuerst `AGENTS.md` und `PROJECT-STATUS.md` gelesen. Ohne eine anderslautende Nutzerpriorität ist `roadmap/feature-requests/verlaesslicher-graph-index.md` das nächste Increment.
 
 ## Vorschau und Übergabe
 
 - Nach Änderungen an der Oberfläche wird die Anwendung als laufende lokale Instanz gestartet und über ihre `localhost`-Adresse in Codex geöffnet.
-- Eine isolierte HTML-Datei oder statische HTML-Vorschau ist nicht die primäre Übergabe, weil API, Vault-Index, Filter, Graph und Zettelansicht den lokalen Server benötigen.
+- Das Verbot direkter Dateivorschauen gilt ausnahmslos für **alle** HTML-Dateien im Repository: Seiten unter `public/`, Spikes, Testseiten, generierte HTML-Artefakte und künftig hinzukommende HTML-Dateien werden niemals über `file://` geöffnet.
+- Seiten der Anwendung werden über den Anwendungserver und ihre echte Route geöffnet, zum Beispiel `http://localhost:4174/quiz`, `/graph` oder `/lesen?id=…`. Dadurch bleiben API, Vault-Index, Filter, Navigation und Zettelansicht funktionsfähig.
+- Auch eine tatsächlich eigenständige statische HTML-Testseite wird über einen lokalen HTTP-Server ausgeliefert. „Statisch“ ist kein Grund für eine `file:///…`-Vorschau.
+- Vor jeder Übergabe wird geprüft, dass der vorgesehene lokale Server läuft und die konkrete `http://localhost:…`-Route erreichbar ist. Erst danach wird sie in Codex geöffnet.
+- Zeigt ein Browser-Tab bereits eine `file://`-URL aus diesem Repository, wird diese Vorschau nicht weiterverwendet: Die passende Serverroute wird ermittelt, der Server bei Bedarf gestartet und der Tab auf die `localhost`-URL navigiert.
+- Jede „Öffnen“-, Vorschau- und Übergabeaktion verwendet ausschließlich eine laufende `http://localhost:…`-Adresse; direkte Links auf lokale `.html`-Dateien sind unzulässig.
 - Der lokale Server bleibt für die weitere Interaktion verfügbar, sofern der Nutzer nicht ausdrücklich um das Beenden bittet.
 
 ## Externe Quelle und aktuelle Basis

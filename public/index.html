@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Zettelkasten Interaktion</title>
     <link rel="stylesheet" href="/styles.css">
+    <script>document.documentElement.dataset.page = ({ '/news': 'news', '/verzetteln': 'verzetteln', '/lesen': 'reader' })[location.pathname] ?? 'main';</script>
   </head>
   <body>
     <main>
       <nav class="main-menu" aria-label="Bereiche">
-        <a href="#news">News</a>
-        <a href="#verzetteln">Verzetteln</a>
-        <a href="#rabbit-hole">Rabbit Hole</a>
+        <a href="/news">News</a>
+        <a href="/verzetteln?bestand=all">Verzetteln</a>
+        <a href="/graph">Graph</a>
+        <a href="/quiz">Wissensspiel</a>
       </nav>
       <section class="hero" aria-labelledby="page-title">
         <p class="eyebrow">Zettelkasten · dein Rabbit Hole</p>
@@ -32,14 +34,6 @@
           <section aria-labelledby="themes-heading">
             <h2 id="themes-heading" class="stats-heading">Themen <span>Areas</span></h2>
             <div id="theme-stats" class="type-stats" aria-label="Themen nach Area"></div>
-          </section>
-          <section aria-labelledby="markers-heading">
-            <h2 id="markers-heading" class="stats-heading">Marker</h2>
-            <div id="marker-stats" class="type-stats" aria-label="Marker im Text"></div>
-          </section>
-          <section id="verzetteln" aria-labelledby="care-heading">
-            <h2 id="care-heading" class="stats-heading">Pflege</h2>
-            <div id="care-stats" class="type-stats" aria-label="Struktur- und Reifehinweise"></div>
           </section>
         </div>
         <p id="results-summary" class="results-summary" aria-live="polite"></p>
@@ -74,13 +68,49 @@
           </section>
         </div>
       </section>
+      <section id="verzetteln" class="care-section" aria-labelledby="care-heading">
+        <div>
+          <p class="eyebrow">Bestand pflegen</p>
+          <h2 id="care-heading">Verzetteln</h2>
+          <p class="care-intro">Bestand gezielt sichten und anschließend pflegen. Ein Zettel kann in mehreren Arbeitslisten erscheinen.</p>
+        </div>
+        <section id="inventory-list-view" class="inventory-list-view" aria-labelledby="inventory-list-heading">
+          <div class="inventory-list-heading">
+            <div>
+              <p class="eyebrow">Bestandsansicht</p>
+              <h3 id="inventory-list-heading"></h3>
+              <p id="inventory-list-summary" class="inventory-list-summary" aria-live="polite"></p>
+            </div>
+            <a class="inventory-back-link" href="/">Zur Übersicht</a>
+          </div>
+          <div id="inventory-list-filters" class="inventory-list-filters" aria-label="Bestand nach Typ filtern"></div>
+          <div id="inventory-list" class="inventory-list" aria-live="polite"></div>
+          <button id="inventory-load-more" class="inventory-load-more" type="button" hidden>Weitere Zettel laden</button>
+        </section>
+        <div class="care-columns">
+          <section aria-labelledby="low-links-heading">
+            <h3 id="low-links-heading">Wenig vernetzt</h3>
+            <p id="low-links-summary" class="care-summary" aria-live="polite"></p>
+            <div id="low-links" class="care-list"></div>
+          </section>
+          <section aria-labelledby="marked-notes-heading">
+            <h3 id="marked-notes-heading">Mit @-Markern</h3>
+            <p id="marked-notes-summary" class="care-summary" aria-live="polite"></p>
+            <div id="marked-notes" class="care-list"></div>
+          </section>
+          <section aria-labelledby="care-notes-heading">
+            <h3 id="care-notes-heading">Aktuell unter Pflege</h3>
+            <p id="care-notes-summary" class="care-summary" aria-live="polite"></p>
+            <div id="care-notes" class="care-list"></div>
+          </section>
+        </div>
+      </section>
       <section id="exploration-shell" class="exploration-shell">
         <aside id="note-reader" class="note-reader" aria-labelledby="note-title" hidden>
           <article>
             <header class="reader-toolbar">
               <span id="reader-mode" class="reader-mode">Lesemodus</span>
               <div class="reader-actions">
-                <button id="quick-add-marker" class="quick-marker" type="button">@add</button>
                 <button id="edit-note" class="edit-note" type="button">Bearbeiten</button>
                 <button id="close-note" class="close-note" type="button" aria-label="Leseraum schließen">×</button>
               </div>
@@ -90,6 +120,19 @@
             <p id="note-path" class="path"></p>
             <dl id="note-metadata"></dl>
             <div id="note-content" class="note-content"></div>
+            <div id="marker-context-menu" class="marker-context-menu" role="menu" aria-label="Marker für diese Textstelle" hidden>
+              <p class="marker-context-heading">Marker setzen</p>
+              <p id="marker-context-target" class="marker-context-target"></p>
+              <div id="marker-context-buttons" class="marker-context-buttons"></div>
+              <p id="marker-context-status" class="marker-context-status" aria-live="polite"></p>
+            </div>
+            <section id="marker-preview" class="change-preview" aria-labelledby="marker-preview-heading" hidden>
+              <h3 id="marker-preview-heading">Markierung prüfen</h3>
+              <p><strong>Markierung:</strong> <span id="marker-preview-source"></span></p>
+              <p><strong>Begründung:</strong> Markierung auf ausgewählten Text setzen.</p>
+              <pre id="marker-change-diff" aria-label="Vorschau der Markierung"></pre>
+              <div class="editor-actions"><button id="confirm-marker" class="confirm-save" type="button">Markierung bestätigen und speichern</button><button id="cancel-marker" type="button">Abbrechen</button></div>
+            </section>
             <section id="note-editor-panel" class="note-editor-panel" aria-labelledby="editor-heading" hidden>
               <h3 id="editor-heading">Zettel bearbeiten</h3>
               <label for="note-editor">Markdown-Inhalt</label>
@@ -113,18 +156,25 @@
         <section id="rabbit-hole" class="graph-section" aria-labelledby="graph-heading">
         <div class="graph-heading">
           <div><p class="eyebrow">Erkundung</p><h2 id="graph-heading">Rabbit Hole Navigation</h2></div>
-          <label class="depth-control" for="graph-depth">
-            <span>Tiefe</span>
-            <input id="graph-depth" type="range" min="1" max="5" value="5" step="1">
-            <output id="depth-value" for="graph-depth">5 Ebenen</output>
-          </label>
         </div>
-        <p id="graph-summary" class="graph-summary">Öffne einen Gedanken und folge seinen Abzweigungen.</p>
-        <div class="graph-tools" aria-label="Steuerung und Legende des Rabbit Holes">
+        <div class="graph-workbench">
+          <label>Gedanken finden<input id="graph-search" type="search" placeholder="Titel, Alias oder Pfad" autocomplete="off"></label>
+          <label>Beziehungen<select id="graph-kind"><option value="all">Alle Beziehungen</option><option value="inline">Wiki-Links</option><option value="related">Related</option></select></label>
+        </div>
+        <div id="graph-search-results" class="graph-search-results" aria-live="polite"></div>
+        <div class="graph-focus-bar"><button id="graph-back" type="button" disabled>← Zurück</button><strong id="graph-focus">Wähle einen Gedanken als Einstieg</strong><button id="graph-read" type="button" disabled>Zettel lesen</button></div>
+        <p id="graph-summary" class="graph-summary" aria-live="polite">Öffne einen Gedanken und folge seinen Abzweigungen.</p>
+        <div class="graph-tools" aria-label="Graph-Steuerung und Legende">
           <div class="graph-controls" aria-label="Graph navigieren">
             <button id="graph-zoom-out" type="button" aria-label="Graph verkleinern">−</button>
             <button id="graph-reset" type="button">Zentrieren</button>
             <button id="graph-zoom-in" type="button" aria-label="Graph vergrößern">+</button>
+            <div class="graph-environment-control" role="group" aria-label="Sichtbares Umfeld">
+              <span>Umfeld</span>
+              <button id="graph-environment-down" type="button" aria-label="Umfeld verkleinern" disabled>−</button>
+              <output id="graph-environment-label" aria-live="polite">Direkt</output>
+              <button id="graph-environment-up" type="button" aria-label="Umfeld vergrößern">+</button>
+            </div>
           </div>
           <div class="graph-legend" aria-label="Legende">
             <span><i class="legend-room sx"></i>SX-Raum</span>
@@ -133,7 +183,9 @@
             <span><i class="legend-passage related"></i>Related</span>
           </div>
         </div>
-        <canvas id="graph-canvas" tabindex="0" aria-label="Interaktive Rabbit Hole Navigation aus Zetteln und ihren Abzweigungen. Mausrad zoomt, Ziehen verschiebt, Klick öffnet einen Raum.">Dein Browser unterstützt keine Canvas-Ansicht.</canvas>
+        <canvas id="graph-canvas" tabindex="0" aria-describedby="graph-help" aria-label="Wissensgraph. Knoten auswählen und als Mittelpunkt erkunden. Alternative: Liste unterhalb des Graphen.">Dein Browser unterstützt keine Canvas-Ansicht.</canvas>
+        <p id="graph-help" class="graph-help">Klick: Mittelpunkt wechseln · Ziehen: verschieben · Zoom: − / + in der Steuerleiste · Umfeld: bestimmt gemeinsam Reichweite und Zahl sichtbarer Räume · Tastatur: Pfeile wählen einen nahegelegenen Raum, Enter setzt ihn als Mittelpunkt, Umschalt + Pfeile verschiebt. Ringe zeigen die kürzeste Linkdistanz. Linienbreite zeigt Linkvorkommen.</p>
+        <details class="graph-details" open><summary>Sichtbare Räume &amp; Beziehungen</summary><div id="graph-node-list" class="graph-node-list"></div></details>
         </section>
       </section>
     </main>

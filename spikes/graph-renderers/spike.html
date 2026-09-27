@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Graph-Renderer-Spike</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <header>
+      <div>
+        <p class="eyebrow">Renderer-Spike · 2.500 Knoten · 20.000 Kanten</p>
+        <h1 id="renderer-title">Graph-Renderer</h1>
+      </div>
+      <nav aria-label="Renderer wählen">
+        <a href="/sigma.html">Sigma.js</a>
+        <a href="/cytoscape.html">Cytoscape.js</a>
+      </nav>
+    </header>
+    <main>
+      <section class="stage" aria-labelledby="renderer-title">
+        <div id="graph" aria-label="Synthetischer Benchmark-Graph"></div>
+      </section>
+      <aside>
+        <p id="status" class="status" aria-live="polite">Benchmark läuft …</p>
+        <dl id="results"></dl>
+        <p id="notes" class="notes"></p>
+      </aside>
+    </main>
+    <script type="module" src="/ENTRY.js"></script>
+  </body>
+</html>
