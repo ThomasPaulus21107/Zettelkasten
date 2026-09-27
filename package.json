@@ -4,7 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node server.mjs",
-    "test": "node --test"
+    "start": "npm run build:graph && node server.mjs",
+    "test": "node --test",
+    "build:graph": "node scripts/build-graph.mjs",
+    "spike:graph:build": "node spikes/graph-renderers/build.mjs",
+    "spike:graph:start": "node spikes/graph-renderers/server.mjs"
+  },
+  "devDependencies": {
+    "cytoscape": "^3.34.3",
+    "esbuild": "^0.28.2",
+    "graphology": "^0.26.0",
+    "graphology-layout-forceatlas2": "^0.10.1",
+    "sigma": "^3.0.3"
   }
 }

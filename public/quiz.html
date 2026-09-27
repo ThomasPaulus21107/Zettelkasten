@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wissensspiel · Zettelkasten</title>
+    <link rel="stylesheet" href="/quiz.css">
+  </head>
+  <body>
+    <main class="game-shell">
+      <nav class="game-nav" aria-label="Bereiche">
+        <a href="/">← Zettelkasten</a>
+        <span>Wissensspiel</span>
+      </nav>
+
+      <section id="intro" class="intro-card" aria-labelledby="game-title">
+        <p class="eyebrow">Dein Wissen · dein Vault</p>
+        <h1 id="game-title">Wie tief geht dein Rabbit Hole?</h1>
+        <p class="lede">Zehn Fragen aus deinen Zetteln: erkenne Gedanken, Definitionen und belegte Zitate im richtigen Zusammenhang. Es gibt keinen Zeitdruck; die Antwortzeit wird nur für eine spätere Auswertung erfasst.</p>
+        <div class="rules" aria-label="Spielregeln">
+          <span><strong>10</strong> Fragen</span>
+          <span><strong>ohne Limit</strong> Zeit wird erfasst</span>
+          <span><strong>+ Bonus</strong> für Serien</span>
+        </div>
+        <button id="start-game" class="primary-button" type="button">Runde starten</button>
+        <p id="load-status" class="load-status" aria-live="polite"></p>
+      </section>
+
+      <section id="game" class="game-card" aria-labelledby="question" hidden>
+        <header class="scoreboard">
+          <div><span>Frage</span><strong id="progress">1 / 10</strong></div>
+          <div><span>Punkte</span><strong id="score">0</strong></div>
+          <div><span>Serie</span><strong id="streak">0 ×</strong></div>
+          <div class="timer-wrap"><span>Zeit</span><strong id="timer">0:00</strong></div>
+        </header>
+        <div class="progress-track" aria-hidden="true"><i id="progress-bar"></i></div>
+        <article class="question-card">
+          <button id="report-question" class="report-toggle" type="button" aria-controls="report-panel" aria-expanded="false">rework</button>
+          <section id="report-panel" class="report-panel" aria-labelledby="report-heading" hidden>
+            <strong id="report-heading">Was braucht Überarbeitung?</strong>
+            <div id="report-reasons" class="report-reasons">
+              <button type="button" data-reason="unclear">Unklar formuliert</button>
+              <button type="button" data-reason="multiple_correct">Mehrere Antworten möglich</button>
+              <button type="button" data-reason="too_easy">Zu leicht / Lösung verraten</button>
+              <button type="button" data-reason="wrong_attribution">Falsche Zuordnung</button>
+              <button type="button" data-reason="broken_excerpt">Ausschnitt fehlerhaft</button>
+              <button type="button" data-reason="missing_context">Kontext fehlt</button>
+            </div>
+            <form id="rework-note-form" class="rework-note-form">
+              <label for="rework-note">Rework Note</label>
+              <textarea id="rework-note" name="rework-note" maxlength="300" rows="3" placeholder="Was sollte an dieser Frage konkret verbessert werden?"></textarea>
+              <button id="submit-rework-note" type="submit">Note speichern</button>
+            </form>
+            <p id="report-status" class="report-status" aria-live="polite"></p>
+          </section>
+          <p id="kicker" class="eyebrow"></p>
+          <h2 id="question"></h2>
+          <p id="clue" class="clue"></p>
+          <div id="answers" class="answers" role="group" aria-label="Antwortmöglichkeiten"></div>
+          <div id="feedback" class="feedback" aria-live="polite" hidden>
+            <strong id="feedback-title"></strong>
+            <p id="explanation"></p>
+            <div class="feedback-actions">
+              <a id="read-source" href="/lesen">Quelle lesen</a>
+              <button id="next-question" class="primary-button" type="button">Nächste Frage</button>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section id="result" class="result-card" aria-labelledby="result-title" hidden>
+        <p class="eyebrow">Runde beendet</p>
+        <div id="result-mark" class="result-mark" aria-hidden="true">◎</div>
+        <h2 id="result-title"></h2>
+        <p id="result-score" class="result-score"></p>
+        <p id="result-copy" class="result-copy"></p>
+        <button id="play-again" class="primary-button" type="button">Neue Runde</button>
+        <a class="secondary-link" href="/graph">Im Graph weiterforschen</a>
+      </section>
+    </main>
+    <script type="module" src="/quiz.js"></script>
+  </body>
+</html>

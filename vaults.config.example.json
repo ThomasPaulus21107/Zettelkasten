@@ -1,12 +1,18 @@
 {
+  "source": {
+    "type": "github",
+    "repository": "https://github.com/ThomasPaulus21107/VAULTS.git",
+    "branch": "main",
+    "cachePath": "/absolute/path/to/zettelkasten-vault-cache"
+  },
   "vaults": [
     {
       "id": "SX",
-      "path": "/absolute/path/to/VAULTS/SX"
+      "path": "SX"
     },
     {
       "id": "DX",
-      "path": "/absolute/path/to/VAULTS/DX"
+      "path": "DX"
     }
   ],
   "excludeDirectories": ["_archive", "_backups", ".obsidian", ".git"]

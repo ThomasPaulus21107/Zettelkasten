@@ -12,7 +12,7 @@ Für die Interpretation der Daten sind im Vault-Repository maßgeblich:
 - `Luhmann-Prinzipien.md` für die Prinzipien des Zettelkastens
 - `OFFENE-THEMEN.md` für gemessene Befunde, offene Fragen und den Arbeitsvorrat
 
-Die Anwendung darf diese Dateien lesen, aber nicht als vertrauliche Zettelinhalte in dieses Repository spiegeln. Wenn eine Regel hier und im Vault voneinander abweichen, ist der Vault maßgeblich und dieser Vertrag muss aktualisiert werden.
+Die Anwendung darf diese Dateien über einen automatisch aktualisierten, lokalen Git-Cache lesen, aber nicht als vertrauliche Zettelinhalte in dieses Repository spiegeln. GitHub bleibt dabei die Quelle der Wahrheit. Wenn eine Regel hier und im Vault voneinander abweichen, ist der Vault maßgeblich und dieser Vertrag muss aktualisiert werden.
 
 ## Domänen und Profile
 
@@ -51,7 +51,7 @@ Die Interaktionsschicht ist standardmäßig read-only. Vorschläge, Analysen und
 
 Der lokale Indexer hat beim letzten Prototyp-Lauf (September 2026) aus den konfigurierten Vault-Pfaden 1.916 Knoten, 13.849 explizite Kanten und 417 nicht aufgelöste Linkziele erkannt. Diese Zahlen sind ein reproduzierbarer App-Snapshot, keine dauerhafte Statistik; für Qualitätsbefunde bleibt `OFFENE-THEMEN.md` im Vault die maßgebliche Quelle.
 
-Die Anwendung schließt Archiv-, Backup-, `.obsidian`- und Git-Metadaten aus. Markdown-Körper werden im Graph-Increment nicht an den Browser ausgeliefert.
+Die Anwendung schließt Archiv-, Backup-, `.obsidian`- und Git-Metadaten aus. Markdown-Körper werden im Graph-Increment nicht an den Browser ausgeliefert. Vor jedem Indexabruf wird der Cache gegen den konfigurierten GitHub-Branch abgeglichen; bei einem fehlgeschlagenen Abgleich liefert die Anwendung keinen veralteten Stand als aktuell aus.
 
 ## Strukturelle Vorschläge
 

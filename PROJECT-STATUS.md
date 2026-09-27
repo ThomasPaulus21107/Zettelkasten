@@ -1,21 +1,25 @@
 # Projektstatus und Übergabe
 
-**Stand:** 13. September 2026
+**Graphansicht aktualisiert:** 22. September 2026. Die übrigen Bestandsmessungen unten stammen vom 13. September 2026.
+
+News, Verzetteln, Lesen und der neue Graph-Arbeitsraum sind als eigene Seiten unter `/news`, `/verzetteln`, `/lesen?id=…` und `/graph` erreichbar. Die Leseseite endet mit der Rabbit-Hole-Navigation zum offenen Zettel. Im Lesemodus öffnet ein Rechtsklick auf ein Wort oder eine markierte Textpassage die vier vereinbarten Marker `@add`, `@new`, `@fix` und `@ask`; die exakte Markdown-Stelle wird aufgelöst und die Änderung bleibt bis zur sichtbaren Vorschau und Bestätigung schreibgeschützt. Der Graph verwendet Sigma.js, Graphology und ForceAtlas2 im Worker. Er trennt Gesamt- und Lokalgraph, Hover, Auswahl, lokales Erkunden und Lesen; bietet Suche, Facettenfilter, visuelle Gruppen, getrennte Regler für Tiefe und Knotenbudget, Darstellungs- und Kraftregler, URL-Zustand sowie eine zugängliche Knotenliste. Die geprüfte Vault-Ansicht stellte 2.249 Zettel und 10.420 aggregierte gerichtete Beziehungen dar. Planung, Rendererentscheidung und Messaufbau: [Umbauplan](docs/graph-view-obsidian-plan.md) und [Renderervergleich](docs/graph-renderer-comparison.md).
 
 Dieses Dokument ist der Einstieg für die Weiterarbeit in einem neuen Projekt-Chat. Es hält den geprüften Ist-Stand fest und trennt bereits funktionierende Teile von offenen Grundlagenarbeiten.
 
 ## Kurzurteil
 
-Das Repository ist eine gute, bewusst kleine Basis für den lokalen Graph-Prototyp. Produktidee, Vault-Grenzen und spätere Features sind dokumentiert. Bevor Lesemodus, Pflegemodus oder Generierung aufgebaut werden, muss der Graphindex jedoch verlässlich und sicher gemacht werden. Der nächste priorisierte Schritt ist deshalb [`feature-request-verlaesslicher-graph-index.md`](feature-request-verlaesslicher-graph-index.md).
+Das Repository ist eine gute, bewusst kleine Basis für den lokalen Graph-Prototyp. Produktidee, Vault-Grenzen und spätere Features sind dokumentiert. Bevor Lesemodus, Pflegemodus oder Generierung aufgebaut werden, muss der Graphindex jedoch verlässlich und sicher gemacht werden. Der nächste priorisierte Schritt ist deshalb [„Verlässlicher Graphindex“](roadmap/feature-requests/verlaesslicher-graph-index.md). Planung und umgesetzte Fähigkeiten sind unter [`roadmap/`](roadmap/README.md) getrennt erfasst.
 
 ## Umgesetzt
 
 - lokaler Node-Server auf `127.0.0.1`, standardmäßig Port 4173
-- read-only Einlesen separat konfigurierter SX- und DX-Pfade
+- GitHub als Quelle der Wahrheit; automatischer read-only Cache-Abgleich vor jedem Indexabruf
 - Ausschluss konfigurierter Archiv-, Backup-, Obsidian- und Git-Verzeichnisse
 - Graph aus Inline-Wiki-Links und `related`
 - Suche nach Titel, Alias und Pfad
 - Detailansicht mit Metadaten und ein fokussierter Canvas mit direkter Nachbarschaft
+- eigenständiger Graph-Arbeitsraum unter `/graph` mit Gesamt- und Lokalmodus, Worker-Layout, Suche, Facettenfiltern, Gruppen, Auswahlkarte und Übergang zum Reader
+- testbare, vom Renderer getrennte Graphlogik für Kantenaggregation, Filter und lokale Breitensuche
 - aktueller Quellcode entfernt den Markdown-Körper vor der Ausgabe der Graph-API
 - getrennte Feature Requests für Graph, Lesen/Rabbit Hole, Pflege, Generierung und Hosting
 - trunk-orientierter Workflow mit Conventional Commits und Pull Requests
@@ -55,15 +59,17 @@ Der aktuelle Frontmatter-Parser übersieht nach der Bestandsmessung mindestens 1
 - Es gibt erst einen automatisierten Indexer-Test.
 - GitHub Actions/CI und eine festgelegte unterstützte Node-Version fehlen.
 - Die Graph-API wird bei jedem Abruf vollständig neu aufgebaut und komplett an den Browser übertragen. Das ist lokal noch schnell genug, aber keine dauerhafte API-Grenze für Lesen oder Hosting.
-- Der Canvas ist mit Maus und Pointer bedienbar, besitzt jedoch noch keine gleichwertige Tastaturnavigation.
+- Die Canvas besitzt Pfeiltasten- und Enter-Navigation; für sehr große sichtbare Teilnetze ist die räumliche Auswahl noch eine einfache Näherung.
 
 ### Dokumentationsabgleich
 
-Der Graph-Prototyp ist umgesetzt, aber noch nicht der gesamte als „Version 1“ beschriebene Umfang. Filter nach Vault, Area, Tag, Typ und Status, das Lesen des Zettelinhalts, Pfad-Historie sowie eine vollständige Darstellung der Kantenherkunft sind weiterhin offen.
+Der neue Graph-Arbeitsraum deckt den zentralen Such-, Auswahl-, Filter-, Gesamt-/Lokal- und Reader-Fluss ab. Weiter offen sind ein sichtbarer Rabbit-Hole-Breadcrumb, ein Kanteninspektor mit vollständiger Herkunft und Sprungstelle, unaufgelöste Ziele als eigene Knoten, persistierte persönliche Einstellungen, mobile Bottom Sheets sowie die belastbare Behandlung mehrdeutiger Linkziele im Index.
 
 ## Getroffene Entscheidungen
 
-- Das Vault-Repository bleibt Quelle der Wahrheit und standardmäßig read-only.
+- Das GitHub-Vault-Repository bleibt Quelle der Wahrheit und standardmäßig read-only. Der lokale Cache wird vor Indexabrufen aktualisiert; Branch, Commit und Abrufzeit sind in der Oberfläche sichtbar.
+- PostgreSQL wird als dauerhafte Schicht zwischen Vault und App geplant. Es hält den reproduzierbaren Index, Interaktionsereignisse sowie Marker-Aufträge; ein Zustand „gelernt“ ist nicht vorgesehen. Coverage misst statt dessen, ob eine auswertbare Interaktion stattfand, während zutreffende und nicht zutreffende Ergebnisse getrennt bleiben. Zielmodell: [`docs/postgres-data-model.md`](docs/postgres-data-model.md).
+- Die App schreibt Marker künftig ausschließlich als PostgreSQL-Aufträge. Ein späterer VAULTS-Prozess konsumiert sie und meldet den Verarbeitungsstatus zurück; der zuvor vorgeschlagene direkte Marker-Commit ist verworfen.
 - Vault-Inhalte und lokale Konfiguration werden nicht in dieses Repository eingecheckt.
 - Explizite Beziehungen haben Vorrang; berechnete Ähnlichkeiten werden später sichtbar als Hypothesen gekennzeichnet.
 - SX und DX dürfen gemeinsam dargestellt werden, ihre Herkunft muss aber immer sichtbar bleiben.

@@ -17,6 +17,22 @@ Die Zettel verfügen über Obsidian-Wiki-Links, Aliasse, YAML-Frontmatter, `rela
 
 Die detaillierten Quellregeln sind in [`docs/vault-integration-contract.md`](docs/vault-integration-contract.md) zusammengefasst. Die maßgeblichen Originale bleiben im separaten Vault-Repository. Der lokale Prototyp hat zuletzt 1.916 Knoten, 13.849 explizite Kanten und 417 unaufgelöste Linkziele erkannt; diese Werte dienen als Größenordnung für Indexierung und Darstellung.
 
+## Datenarchitektur
+
+Zwischen Vault und Anwendung wird eine persistente App-Datenbank eingeführt. Sie ersetzt den Vault nicht als Quelle der Zettelinhalte, sondern trennt drei Arten von Zustand:
+
+- **Vault/GitHub:** maßgebliche Zettelinhalte und deren Revisionen;
+- **abgeleiteter Index:** aus einer konkreten Vault-Revision reproduzierbare Knoten, Kanten und Suchdaten;
+- **App-Zustand:** Interaktionsereignisse, daraus berechnete Coverage und Trefferquote sowie Marker-Aufträge und deren Bearbeitungsstatus.
+
+Die App liest damit nicht mehr bei jeder Interaktion unmittelbar aus dem Git-Cache. Ein Synchronisationslauf übernimmt eine bestätigte Vault-Revision in den abgeleiteten Index; die Oberfläche arbeitet gegen PostgreSQL und zeigt weiterhin Branch und Commit. PostgreSQL ist von Anfang an die geplante Datenbank, auch im Einzelnutzerbetrieb. App-Zustand darf keine vertraulichen Zettelkörper duplizieren und muss über eine stabile Zettelidentität mit dem jeweiligen Vault-Stand verbunden bleiben.
+
+Coverage ist kein Lern- oder Beherrschungsstatus. Sie drückt aus, mit welchen Zetteln bereits eine auswertbare Interaktion stattgefunden hat. Das Ergebnis der Interaktion wird getrennt als zutreffend oder nicht zutreffend gespeichert; beides erhöht die Abdeckung, aber nur zutreffende Ergebnisse erhöhen die Trefferquote.
+
+Marker werden ausschließlich als nachvollziehbare Aufträge in PostgreSQL verwaltet. Die App schreibt sie nicht in den Markdown-Text des Vaults. Ein späterer VAULTS-Prozess liest offene Aufträge aus der Datenbank, setzt sie nach seinen eigenen Regeln um und meldet den Bearbeitungsstatus zurück.
+
+Der vorgeschlagene Tabellenzuschnitt, die Statusmodelle und die Einführungsreihenfolge stehen in [`docs/postgres-data-model.md`](docs/postgres-data-model.md).
+
 ## Produktphasen
 
 1. **Verlässlicher Indexkern:** deterministische Quellinterpretation, sichere Ausgabe und belastbare Tests.
@@ -48,6 +64,7 @@ Der globale Graph dient als Orientierung. Die eigentliche Arbeit erfolgt in foku
 ## Getroffene Entscheidungen
 
 - Das Projekt ist eine read-only Interaktionsschicht; die Vaults bleiben die Datenquelle und werden nicht in dieses Repo gespiegelt.
+- PostgreSQL verwaltet abgeleitete Indexdaten und eigenen Interaktionszustand, insbesondere Interaktionsabdeckung, Trefferquote und Marker-Aufträge. Die Datenbank ist keine konkurrierende Quelle für Zettelinhalte.
 - SX und DX bleiben als Domänen erkennbar. Eine gemeinsame Karte ist möglich, muss die Vault-Grenze aber sichtbar lassen.
 - Explizite Beziehungen werden zuerst visualisiert. Berechnete Ähnlichkeiten dürfen später nur als Hypothesen mit eigener Herkunft erscheinen.
 - Strukturelle Änderungen an Frontmatter, Links oder Taxonomien werden vorgeschlagen, begründet und bestätigt; sie sind keine stille Voraussetzung für die erste Graphansicht.
