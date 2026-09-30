@@ -3,7 +3,7 @@ import { after, test } from 'node:test';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { buildGraph, loadNote } from '../lib/indexer.mjs';
+import { buildAreaIndex, buildGraph, loadNote } from '../lib/indexer.mjs';
 
 const root = await mkdtemp(path.join(tmpdir(), 'zettelkasten-indexer-'));
 const sx = path.join(root, 'SX');
@@ -100,4 +100,12 @@ test('liefert den Markdown-Körper nur über die einzelne Zettelabfrage', async 
   assert.equal(noteResult.title, 'Führung');
   assert.equal(noteResult.content, '\n');
   assert.equal('body' in noteResult, false);
+});
+
+test('gruppiert ausschließlich normale Zettel nach Vault und Area', async () => {
+  await note(sx, 'Zettel/INDEX_TEST.md', '---\ntype: meta\narea: organisation\n---');
+  const areas = await buildAreaIndex(config);
+  const organisation = areas.find((entry) => entry.vault === 'SX' && entry.area === 'organisation');
+  assert.equal(organisation.nodes.some((node) => node.path === 'Zettel/INDEX_TEST.md'), false);
+  assert.equal(organisation.nodes.some((node) => node.path === 'Zettel/Systemtheorie.md'), true);
 });
