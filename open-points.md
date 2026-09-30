@@ -36,17 +36,15 @@ Diese Liste sammelt Entscheidungen und Klärungsbedarfe, die nicht stillschweige
 
 ### Cross-Vault-Links
 
-- **Status:** offen
+- **Status:** entschieden am 30. September 2026
 - **Kontext:** Die Linkauflösung soll Cross-Vault-Ziele nur bei ausdrücklich erlaubter Syntax auflösen.
-- **Auswirkung:** Ohne Regel bleiben gleichnamige Ziele über Vault-Grenzen hinweg mehrdeutig oder ungelöst.
-- **Frage:** Welche eindeutige Syntax und welche Regeln sollen absichtliche Cross-Vault-Links verwenden?
+- **Entscheidung:** Ein Wiki-Link beginnt mit der Vault-Kennung und Doppelpunkt, etwa DX:Zettel/Architektur/Conway. Die Auflösung folgt danach denselben Pfad- und Namensregeln wie innerhalb eines Vaults.
 
 ### Modellierung wiederholter Links
 
-- **Status:** offen
+- **Status:** entschieden am 30. September 2026
 - **Kontext:** Mehrfach vorkommende Wiki-Links brauchen eindeutige Kanten-IDs und nachvollziehbare Herkunft.
-- **Auswirkung:** Entscheidet, ob der Graph Linkvorkommen vollständig erhält oder sie deterministisch zusammenfasst.
-- **Frage:** Sollen wiederholte Links als einzelne Vorkommen oder als aggregierte Beziehung modelliert werden?
+- **Entscheidung:** Jeder Link bleibt ein eigenes Vorkommen. Die Kante enthält eine stabile laufende Nummer sowie ihre Zeichenposition im Markdown-Körper oder den Index im related-Feld.
 
 ### Typisierte `related`-Beziehungen
 
@@ -59,10 +57,9 @@ Diese Liste sammelt Entscheidungen und Klärungsbedarfe, die nicht stillschweige
 
 ### Unterstützte Node-Version
 
-- **Status:** offen
+- **Status:** entschieden am 30. September 2026
 - **Kontext:** Der lokale Prototyp hat keine festgelegte Node-Version.
-- **Auswirkung:** Voraussetzung für reproduzierbare lokale Entwicklung und CI.
-- **Frage:** Welche LTS-Version soll als unterstützte Mindestversion festgelegt werden?
+- **Entscheidung:** Node.js 22 oder neuer ist die unterstützte Mindestversion; die CI verwendet Node 22.
 
 ### CI-Umfang
 

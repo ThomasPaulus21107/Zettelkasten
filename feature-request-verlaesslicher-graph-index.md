@@ -1,6 +1,6 @@
 # Feature Request: Verlässlicher Graphindex
 
-**Status:** als Nächstes · **Priorität:** Grundlage vor weiteren Produktfeatures
+**Status:** umgesetzt am 30. September 2026 · **Priorität:** Grundlage vor weiteren Produktfeatures
 
 ## Ziel
 

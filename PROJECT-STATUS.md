@@ -1,6 +1,6 @@
 # Projektstatus und Übergabe
 
-**Stand:** 13. September 2026
+**Stand:** 30. September 2026
 
 Dieses Dokument ist der Einstieg für die Weiterarbeit in einem neuen Projekt-Chat. Es hält den geprüften Ist-Stand fest und trennt bereits funktionierende Teile von offenen Grundlagenarbeiten.
 
