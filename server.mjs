@@ -25,7 +25,7 @@ const server = http.createServer(async (request, response) => {
     if (url.pathname === '/styles.css') return sendFile(response, 'public/styles.css', 'text/css; charset=utf-8');
     sendJson(response, 404, { error: 'Nicht gefunden.' });
   } catch (error) {
-    const message = error.code === 'ENOENT' ? 'Konfiguration fehlt: vaults.config.json anhand der Beispieldatei anlegen.' : error.message;
+    const message = error.code === 'ENOENT' ? 'Konfiguration fehlt: vaults.config.json anhand der Beispieldatei anlegen.' : 'Index konnte nicht erstellt werden. Details stehen in der Server-Konsole.';
     sendJson(response, 500, { error: message });
   }
 });
