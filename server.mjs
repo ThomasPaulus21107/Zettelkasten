@@ -2,7 +2,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { promises as fs } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { buildGraph, loadConfig, loadNote } from './lib/indexer.mjs';
+import { buildAreaIndex, buildGraph, loadConfig, loadNote } from './lib/indexer.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const configPath = path.join(root, 'vaults.config.json');
@@ -15,6 +15,7 @@ const server = http.createServer(async (request, response) => {
       const graph = await buildGraph(await loadConfig(configPath));
       return sendJson(response, 200, graph);
     }
+    if (url.pathname === '/api/areas') return sendJson(response, 200, await buildAreaIndex(await loadConfig(configPath)));
     if (url.pathname === '/api/note') {
       const id = url.searchParams.get('id');
       if (!id) return sendJson(response, 400, { error: 'Zettelkennung fehlt.' });

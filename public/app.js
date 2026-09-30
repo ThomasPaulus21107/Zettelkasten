@@ -1,6 +1,7 @@
 const elements = {
   search: document.querySelector('#search'), summary: document.querySelector('#summary'), typeStats: document.querySelector('#type-stats'),
   results: document.querySelector('#results'), graphSummary: document.querySelector('#graph-summary'), canvas: document.querySelector('#graph-canvas'),
+  areas: document.querySelector('#areas'),
   resultTemplate: document.querySelector('#result-template'), dialog: document.querySelector('#note-dialog'), closeNote: document.querySelector('#close-note'),
   noteVault: document.querySelector('#note-vault'), noteTitle: document.querySelector('#note-title'), notePath: document.querySelector('#note-path'),
   noteMetadata: document.querySelector('#note-metadata'), noteContent: document.querySelector('#note-content')
@@ -19,6 +20,7 @@ try {
   nodesById = new Map(graph.nodes.map((node) => [node.id, node]));
   adjacency = makeAdjacency(graph.edges);
   renderTypeStats();
+  renderAreas(await fetch('/api/areas').then(readJson));
 } catch (error) {
   elements.summary.textContent = `Index konnte nicht geladen werden: ${error.message}`;
 }
@@ -69,6 +71,26 @@ function renderTypeStats() {
     const chip = document.createElement('span');
     chip.textContent = `${count} ${label}`;
     return chip;
+  }));
+}
+
+function renderAreas(groups) {
+  elements.areas.replaceChildren(...groups.map((group) => {
+    const section = document.createElement('section');
+    const heading = document.createElement('h3');
+    heading.textContent = group.vault + ' · ' + group.area + ' · ' + group.nodes.length;
+    const list = document.createElement('ul');
+    for (const node of group.nodes) {
+      const item = document.createElement('li');
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = node.title;
+      button.addEventListener('click', () => { activeSeedId = node.id; elements.search.value = node.title; updateView(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+      item.append(button);
+      list.append(item);
+    }
+    section.append(heading, list);
+    return section;
   }));
 }
 
