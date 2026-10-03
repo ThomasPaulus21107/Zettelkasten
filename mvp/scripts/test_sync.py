@@ -13,6 +13,10 @@ class SyncTests(unittest.TestCase):
         data, body = split_frontmatter('---\ntitle: Test\naliases:\n - Eins\n---\nText')
         self.assertEqual(data['aliases'], ['Eins'])
         self.assertEqual(body, 'Text')
+        data, body = split_frontmatter('---\ntitle: "broken" trailing value\nstatus: active\n---\nText')
+        self.assertTrue(data['_malformed'])
+        self.assertEqual(data['status'], 'active')
+        self.assertEqual(body, 'Text')
 
     def test_import_rejects_incomplete_snapshot(self):
         output = io.BytesIO()

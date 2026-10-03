@@ -14,13 +14,15 @@ The browser renders Markdown as safe text blocks. Rich Obsidian features, graphs
 
 ## Cloudflare setup
 
-1. Create a D1 database named `zettelkasten-reader` in the intended Cloudflare account. Apply [`schema.sql`](schema.sql) to it.
+1. Create a D1 database named `zettelkasten-reader` in the intended Cloudflare account (`npx wrangler d1 create zettelkasten-reader`). Apply [`schema.sql`](schema.sql) with `npx wrangler d1 execute zettelkasten-reader --remote --file=mvp/schema.sql --config=mvp/wrangler.jsonc`.
 2. Copy `wrangler.example.jsonc` to `wrangler.jsonc`; set the D1 database ID and the owner's email in `ALLOWED_EMAILS`. Set the actual Vault default branch if it differs from `main`.
-3. Add `GITHUB_TOKEN` as a Worker secret. It needs read-only access to the `VAULTS` repository. Never put it in `wrangler.jsonc` or source control.
-4. Deploy the Worker using Wrangler. The template enables the free `workers.dev` address; a custom domain is optional. Turn on **Cloudflare Access for the entire Worker** before allowing users in, so every address and preview route is protected. Configure the Access policy for the same owner email. Check that an unauthenticated request to `/`, `/app.js` and `/api/search?q=test` is denied.
+3. Deploy the Worker with `npx wrangler deploy --config=mvp/wrangler.jsonc`, then add `GITHUB_TOKEN` with `npx wrangler secret put GITHUB_TOKEN --config=mvp/wrangler.jsonc`. The token needs read-only access to `VAULTS`. Never put it in `wrangler.jsonc` or source control. The Worker rejects requests until authentication and indexing are ready.
+4. The template enables the free `workers.dev` address; a custom domain is optional. Turn on **Cloudflare Access for the entire Worker** before allowing users in, so every address and preview route is protected. Configure the Access policy for the same owner email. Check that an unauthenticated request to `/`, `/app.js` and `/api/search?q=test` is denied.
 5. Add GitHub Actions secrets `VAULTS_READ_TOKEN`, `CLOUDFLARE_D1_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_D1_DATABASE_ID` to this application repository. The D1 token should be restricted to this database/account. The VAULTS token needs repository contents read access only.
 6. Run the sync once manually with `python mvp/scripts/sync.py --dry-run`. Review the included/excluded counts and paths against the actual Vault before the first publication. Then run the `Sync Cloudflare reader` workflow manually. Scheduled sync works after this branch reaches the default branch.
 7. Check search, reading, Markdown sharing and PDF print/share on an iPhone. Confirm that changing the Vault makes reads return 503 until sync completes.
+
+The read-only audit on Vault revision `83d9946cfeac` found 1,845 included notes (SX 1,316; DX 529), 484 path exclusions inside SX/DX, and two malformed YAML frontmatters handled by a counted fallback. The raw Markdown totals about 3.3 MB; D1's final stored size still needs measurement after import. Review the exclusion rules against the source conventions before publishing.
 
 If D1 or Access provisioning is not complete, the Worker denies access or reports the source unavailable. Do not disable either check to make the site appear ready.
 

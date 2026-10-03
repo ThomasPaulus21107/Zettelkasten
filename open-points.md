@@ -60,14 +60,14 @@ Diese Liste sammelt Entscheidungen und Klärungsbedarfe, die nicht stillschweige
 ### Cloudflare MVP: Zugang und erste Datenfreigabe
 
 - **Status:** offen, blockiert den echten Deploy
-- **Kontext:** Der private Reader ist lokal implementiert. Für Cloudflare Worker, D1, Access und den ersten Vault-Import fehlen aktuell nutzbare Zugangsdaten. Der verfügbare GitHub-Zugang konnte das externe Vault nicht abrufen.
-- **Auswirkung:** Ohne diese Angaben kann weder die tatsächliche Zettelklassifikation am Vault geprüft noch eine private Instanz veröffentlicht werden.
-- **Frage:** Welcher Cloudflare-Account und welche Domain/Route sollen genutzt werden, welche E-Mail darf Access zulassen, und ist `VAULTS` privat? Bitte Zugang über die jeweiligen sicheren Login-/Secret-Wege bereitstellen, nicht als Token im Chat.
+- **Kontext:** Der private Reader ist lokal implementiert. `VAULTS` ist nach aktueller GitHub-Prüfung privat und verwendet `main`. Der lokale GitHub-Zugang erlaubt einen Dry Run. Für Cloudflare Worker, D1 und Access fehlen aktuell nutzbare Zugangsdaten; für die spätere GitHub Action muss ein eigener Vault-Lesetoken als Secret eingerichtet werden.
+- **Auswirkung:** Ohne Cloudflare-Zugang und Access-Freigabe kann keine private Instanz veröffentlicht werden.
+- **Frage:** Welcher Cloudflare-Account und welche Domain/Route sollen genutzt werden, und welche E-Mail darf Access zulassen? Bitte Zugang über die jeweiligen sicheren Login-/Secret-Wege bereitstellen, nicht als Token im Chat.
 
 ### Cloudflare MVP: Vault-Klassifikation
 
 - **Status:** offen, vor dem ersten produktiven Import prüfen
-- **Kontext:** Der Import nimmt Markdown unter `SX` und `DX` auf und schließt bekannte Archiv-, Entwurfs-, System- und Backup-Pfade aus. Echte Pfade und Frontmatter-Statuswerte konnten wegen fehlendem Vault-Zugriff noch nicht abgeglichen werden.
+- **Kontext:** Der Import nimmt Markdown unter `SX` und `DX` auf und schließt bekannte Archiv-, Entwurfs-, System- und Backup-Pfade aus. Ein Dry Run auf Revision `83d9946cfeac` ergab 1.845 aufgenommene Zettel (1.316 SX, 529 DX), 484 nach Pfad ausgeschlossene SX/DX-Dateien und zwei Zettel mit fehlerhaftem YAML, für die ein markierter Fallback verwendet wird. Insgesamt liegen weitere 1.758 Markdown-Dateien außerhalb von SX/DX.
 - **Auswirkung:** Die erste Indexversion kann sonst Nicht-Zettel enthalten oder aktive Zettel auslassen.
 - **Frage:** Stimmen die Ausschlüsse und die gezählte Menge nach einem Dry Run am echten Vault? Falls nicht, welche Pfad-/Statuskonventionen müssen angepasst werden?
 

@@ -58,15 +58,25 @@ def split_frontmatter(markdown):
     match = re.match(r'\A---\r?\n(.*?)\r?\n---(?:\r?\n|\Z)', markdown, re.S)
     if not match:
         return {}, markdown
-    metadata = yaml.safe_load(match.group(1)) or {}
-    if not isinstance(metadata, dict):
-        raise ValueError('Frontmatter is not a mapping')
+    try:
+        metadata = yaml.safe_load(match.group(1)) or {}
+        if not isinstance(metadata, dict):
+            raise ValueError('Frontmatter is not a mapping')
+    except (yaml.YAMLError, ValueError):
+        # Some existing notes contain invalid YAML. Keep the note, and report the
+        # count, while reading only simple single-line fields as a fallback.
+        metadata = {'_malformed': True}
+        for key in ('title', 'status'):
+            field = re.search(rf'(?m)^{key}:\s*(.*)$', match.group(1))
+            if field:
+                metadata[key] = field.group(1).strip().strip('"\'')
     return metadata, markdown[match.end():]
 
 
 def parse_archive(archive, revision):
     notes = []
     excluded = 0
+    malformed = 0
     with tarfile.open(fileobj=io.BytesIO(archive), mode='r:gz') as bundle:
         for member in bundle:
             if not member.isfile():
@@ -81,6 +91,7 @@ def parse_archive(archive, revision):
                 raise ValueError(f'Note exceeds safety limit: {path}')
             markdown = bundle.extractfile(member).read().decode('utf-8-sig')
             metadata, body = split_frontmatter(markdown)
+            malformed += bool(metadata.get('_malformed'))
             status = str(metadata.get('status', '')).casefold()
             if status in {'archived', 'archive', 'archiviert', 'draft', 'entwurf'}:
                 excluded += 1
@@ -97,7 +108,7 @@ def parse_archive(archive, revision):
                           'markdown': markdown, 'body': body})
     if len(notes) < 1000 or len({note['id'] for note in notes}) != len(notes):
         raise ValueError(f'Unexpected note count or duplicate paths: {len(notes)}')
-    return notes, excluded
+    return notes, excluded, malformed
 
 
 def d1(sql, params=None):
@@ -118,7 +129,7 @@ def insert_many(table, columns, rows, batch_size=10):
         d1(sql, [row[column] for row in batch for column in columns])
 
 
-def publish(notes, excluded, revision):
+def publish(notes, excluded, malformed, revision):
     current = d1('SELECT source_commit FROM index_state WHERE id = 1')
     if current and current[0]['source_commit'] == revision:
         print(f'Index already current: {revision[:12]}')
@@ -135,7 +146,7 @@ def publish(notes, excluded, revision):
        [BRANCH, revision, datetime.now(timezone.utc).isoformat(), len(notes), excluded])
     d1('DELETE FROM note_search WHERE source_commit != ?', [revision])
     d1('DELETE FROM notes WHERE source_commit != ?', [revision])
-    print(f'Published {len(notes)} notes at {revision[:12]}; excluded {excluded} Markdown files')
+    print(f'Published {len(notes)} notes at {revision[:12]}; excluded {excluded}; malformed YAML {malformed}')
 
 
 def main():
@@ -147,10 +158,10 @@ def main():
         if current and current[0]['source_commit'] == revision:
             print(f'Index already current: {revision[:12]}')
             return
-    notes, excluded = parse_archive(github_archive(token, revision), revision)
-    print(f'Validated {len(notes)} notes; excluded {excluded} Markdown files; revision {revision[:12]}')
+    notes, excluded, malformed = parse_archive(github_archive(token, revision), revision)
+    print(f'Validated {len(notes)} notes; excluded {excluded} Markdown files; malformed YAML {malformed}; revision {revision[:12]}')
     if '--dry-run' not in sys.argv:
-        publish(notes, excluded, revision)
+        publish(notes, excluded, malformed, revision)
 
 
 if __name__ == '__main__':
