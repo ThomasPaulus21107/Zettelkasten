@@ -88,7 +88,7 @@ async function verifiedSource(env) {
   if (!revision || revision !== state.source_commit) {
     throw new SourceUnavailable('Der Vault wurde geändert; der Suchindex wird aktualisiert.');
   }
-  return { branch: state.source_branch, revision, indexedAt: state.indexed_at, noteCount: state.note_count };
+  return { branch: state.source_branch, revision, checkedAt: new Date().toISOString(), indexedAt: state.indexed_at, noteCount: state.note_count };
 }
 
 class SourceUnavailable extends Error {}

@@ -8,7 +8,7 @@ let timer;
 let controller;
 
 function setStatus(message, error = false) { status.textContent = message; status.classList.toggle('error', error); }
-function sourceLabel(source) { document.querySelector('#source').textContent = source ? `VAULTS · ${source.branch} · ${source.revision.slice(0, 8)} · Index: ${new Date(source.indexedAt).toLocaleString('de-DE')}` : 'Quelle derzeit nicht verfügbar'; }
+function sourceLabel(source) { document.querySelector('#source').textContent = source ? `VAULTS · ${source.branch} · ${source.revision.slice(0, 8)} · GitHub geprüft: ${new Date(source.checkedAt).toLocaleString('de-DE')} · Index: ${new Date(source.indexedAt).toLocaleString('de-DE')}` : 'Quelle derzeit nicht verfügbar'; }
 async function api(path, signal) {
   const response = await fetch(path, { signal, cache: 'no-store' });
   const data = await response.json();
