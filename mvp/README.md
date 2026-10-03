@@ -22,7 +22,9 @@ The browser renders Markdown as safe text blocks. Rich Obsidian features, graphs
 6. Run the sync once manually with `python mvp/scripts/sync.py --dry-run`. Review the included/excluded counts and paths against the actual Vault before the first publication. Then run the `Sync Cloudflare reader` workflow manually. Scheduled sync works after this branch reaches the default branch.
 7. Check search, reading, Markdown sharing and PDF print/share on an iPhone. Confirm that changing the Vault makes reads return 503 until sync completes.
 
-The read-only audit on Vault revision `83d9946cfeac` found 1,845 included notes (SX 1,316; DX 529), 484 path exclusions inside SX/DX, and two malformed YAML frontmatters handled by a counted fallback. The raw Markdown totals about 3.3 MB; D1's final stored size still needs measurement after import. Review the exclusion rules against the source conventions before publishing.
+The latest read-only audit on Vault revision `ad12eeb54e2b` found 1,841 included notes, 488 path exclusions inside SX/DX, and two malformed YAML frontmatters handled by a counted fallback. A previous snapshot's raw Markdown total was about 3.3 MB; D1's final stored size still needs measurement after import.
+
+The owner confirmed that the inboxes are processed before publication. The 478 `_inbox` files remain outside the MVP search index until they become regular SX/DX notes. The other ten exclusions are system or control files. The two YAML fallbacks are regular notes with `rohling` status.
 
 If D1 or Access provisioning is not complete, the Worker denies access or reports the source unavailable. Do not disable either check to make the site appear ready.
 

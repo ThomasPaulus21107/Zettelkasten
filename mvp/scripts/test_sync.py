@@ -8,7 +8,8 @@ from sync import include_path, parse_archive, split_frontmatter
 class SyncTests(unittest.TestCase):
     def test_paths_and_frontmatter(self):
         self.assertTrue(include_path('SX/notes/A.md'))
-        for path in ['SX/archive/A.md', 'DX/.obsidian/A.md', 'DX/CLAUDE.md', 'other/A.md']:
+        self.assertTrue(include_path('SX/Zettel/... sounds like Nokia 2006.md'))
+        for path in ['SX/archive/A.md', 'DX/.obsidian/A.md', 'DX/CLAUDE.md', 'DX/index.md', 'SX/log.md', 'SX/2026-08-21.md', 'other/A.md']:
             self.assertFalse(include_path(path))
         data, body = split_frontmatter('---\ntitle: Test\naliases:\n - Eins\n---\nText')
         self.assertEqual(data['aliases'], ['Eins'])

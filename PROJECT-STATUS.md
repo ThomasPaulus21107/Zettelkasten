@@ -2,7 +2,7 @@
 
 **Stand:** 13. September 2026
 
-**Nachtrag 3. Oktober 2026:** Die Nutzerpriorität ist jetzt ein stark reduzierter privater iPhone-Reader auf Cloudflare. Unter [`mvp/README.md`](mvp/README.md) liegen Worker, D1-Schema, Vault-Sync und mobile Oberfläche als isolierte Implementierung. Die lokale Vorschau und Tests sind geprüft. Der read-only Dry Run am privaten Vault (`main`, Revision `83d9946cfeac`) erfasste 1.845 Zettel und zwei YAML-Fallbacks. Die Ausschlussregeln müssen vor dem ersten produktiven Import fachlich geprüft werden. Cloudflare-Deploy steht mangels Account-/Access-Konfiguration aus. Die unten stehende frühere Graph-Priorisierung gilt für dieses MVP derzeit nicht.
+**Nachtrag 3. Oktober 2026:** Die Nutzerpriorität ist jetzt ein stark reduzierter privater iPhone-Reader auf Cloudflare. Unter [`mvp/README.md`](mvp/README.md) liegen Worker, D1-Schema, Vault-Sync und mobile Oberfläche als isolierte Implementierung. Die lokale Vorschau und Tests sind geprüft. Der erneute read-only Dry Run am privaten Vault (`main`, Revision `ad12eeb54e2b`) erfasste 1.841 Zettel und zwei YAML-Fallbacks; die Import-Ausschlüsse sind für das MVP geprüft. Cloudflare-Deploy steht mangels Account-/Access-Konfiguration aus. Die unten stehende frühere Graph-Priorisierung gilt für dieses MVP derzeit nicht.
 
 Dieses Dokument ist der Einstieg für die Weiterarbeit in einem neuen Projekt-Chat. Es hält den geprüften Ist-Stand fest und trennt bereits funktionierende Teile von offenen Grundlagenarbeiten.
 

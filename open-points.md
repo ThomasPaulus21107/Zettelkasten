@@ -66,10 +66,11 @@ Diese Liste sammelt Entscheidungen und Klärungsbedarfe, die nicht stillschweige
 
 ### Cloudflare MVP: Vault-Klassifikation
 
-- **Status:** offen, vor dem ersten produktiven Import prüfen
-- **Kontext:** Der Import nimmt Markdown unter `SX` und `DX` auf und schließt bekannte Archiv-, Entwurfs-, System- und Backup-Pfade aus. Ein Dry Run auf Revision `83d9946cfeac` ergab 1.845 aufgenommene Zettel (1.316 SX, 529 DX), 484 nach Pfad ausgeschlossene SX/DX-Dateien (478 `_inbox`, sechs System-/Steuerdateien) und zwei Zettel mit fehlerhaftem YAML, für die ein markierter Fallback verwendet wird. Insgesamt liegen weitere 1.758 Markdown-Dateien außerhalb von SX/DX.
-- **Auswirkung:** Die erste Indexversion kann sonst Nicht-Zettel enthalten oder aktive Zettel auslassen.
-- **Frage:** Stimmen die Ausschlüsse und die gezählte Menge nach einem Dry Run am echten Vault? Falls nicht, welche Pfad-/Statuskonventionen müssen angepasst werden?
+- **Status:** entschieden und technisch geprüft für den ersten MVP-Import am 3. Oktober 2026
+- **Kontext:** Der Import nimmt Markdown unter `SX` und `DX` auf und schließt bekannte Archiv-, Entwurfs-, System- und Backup-Pfade aus. Der erneute Dry Run auf Revision `ad12eeb54e2b` ergab 1.841 aufgenommene Zettel, 488 nach Pfad ausgeschlossene SX/DX-Dateien (478 `_inbox`, zehn System-/Steuerdateien) und zwei Zettel mit fehlerhaftem YAML. Weitere 1.758 Markdown-Dateien liegen außerhalb von SX/DX.
+- **Auswirkung:** Der erste Index enthält reguläre Zettel und lässt unverarbeitete Inboxen und Steuerdateien aus.
+- **Entscheidung vom 3. Oktober 2026:** Die Inboxen werden vorab verarbeitet. Unverarbeitete `_inbox`-Dateien erscheinen nicht im MVP-Suchindex; verarbeitete Zettel werden an ihrem regulären SX-/DX-Pfad erfasst.
+- **Technische Prüfung:** `AGENTS.md`, Templates, `index.md`, `log.md` und eine datierte Protokolldatei sind ausgeschlossen. Ein regulärer Zettel mit führenden Punkten im Dateinamen wird aufgenommen. Die zwei YAML-Fallbacks haben den Status `rohling` und bleiben als Zettel im Index.
 
 ### Unterstützte Node-Version
 

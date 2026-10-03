@@ -48,10 +48,14 @@ def include_path(path):
     if len(parts) < 2 or parts[0] not in ('SX', 'DX') or not path.lower().endswith('.md'):
         return False
     blocked = {'archive', 'archiv', 'archives', 'backup', 'backups', '.obsidian', '.git', '_inbox', '_drafts', 'drafts', '_proposals', 'logs', 'log', 'templates', 'system'}
-    if any(p.lower() in blocked or p.startswith('.') for p in parts):
+    if any(p.lower() in blocked or p.startswith('.') for p in parts[:-1]):
         return False
     name = parts[-1].lower()
-    return name not in {'claude.md', 'readme.md', 'agents.md', 'offene-themen.md', 'luhmann-prinzipien.md'}
+    if name in {'claude.md', 'readme.md', 'agents.md', 'index.md', 'log.md', 'offene-themen.md', 'luhmann-prinzipien.md'}:
+        return False
+    if len(parts) == 2 and re.fullmatch(r'\d{4}-\d{2}-\d{2}\.md', name):
+        return False
+    return True
 
 
 def split_frontmatter(markdown):
