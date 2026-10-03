@@ -59,11 +59,11 @@ Diese Liste sammelt Entscheidungen und Klärungsbedarfe, die nicht stillschweige
 
 ### Cloudflare MVP: Zugang und erste Datenfreigabe
 
-- **Status:** teilweise entschieden; Zero Trust und Vault-Sync blockieren den echten Deploy
-- **Kontext:** Der Nutzer hat Cloudflare-Account `14c320ab61d87526996099d7d0e175d2` und die allein zugelassene E-Mail `thomaspaulus@me.com` genannt. `workers.dev` ist für den MVP vorgesehen. D1 `zettelkasten-reader` (`d95be413-7120-4b2c-9b93-6cf4e599ce18`) und die drei Schematabellen sind am 3. Oktober 2026 erstellt. Cloudflare Zero Trust ist im Account noch nicht aktiviert; die Free-Plan-Auswahl im Dashboard führte bei der Prüfung nicht zum nächsten Schritt. Die lokale GitHub-CLI-Anmeldung ist aktuell ungültig. Für Worker und GitHub Action fehlt ein eigener Vault-Lesetoken als Secret.
-- **Auswirkung:** Ohne aktive Access-Policy und Vault-Sync kann keine private, aktuelle Zettelansicht veröffentlicht werden.
-- **Frage:** Zero Trust Free im Cloudflare-Konto abschließen und Access nur für `thomaspaulus@me.com` aktivieren; anschließend einen auf `VAULTS` beschränkten Lesetoken über sichere Secret-Eingaben bereitstellen. Keine Tokens im Chat oder Repository speichern.
-- **Entscheidung vom 3. Oktober 2026:** Cloudflare-Account, `workers.dev` und die allein zugelassene E-Mail sind festgelegt.
+- **Status:** teilweise entschieden; Vault-Zugang und automatischer D1-Abgleich fehlen
+- **Kontext:** Der Nutzer hat Cloudflare-Account `14c320ab61d87526996099d7d0e175d2` und die allein zugelassene E-Mail `thomaspaulus@me.com` genannt. `workers.dev` ist für den MVP vorgesehen. D1 `zettelkasten-reader` (`d95be413-7120-4b2c-9b93-6cf4e599ce18`) und die drei Schematabellen sind am 3. Oktober 2026 erstellt. Zero Trust Free ist aktiv. Der Worker ist unter `zettelkasten-reader.thomaspaulus.workers.dev` deployt und seine D1-Bindung gesetzt. Worker-Level Access schützt gesamten Traffic und Vorschau-URLs mit der Ein-E-Mail-Policy `Zettelkasten Reader – Thomas`; anonyme Aufrufe von `/`, `/app.js` und `/api/search` werden zum Login umgeleitet. `CLOUDFLARE_ACCOUNT_ID` und `CLOUDFLARE_D1_DATABASE_ID` sind im App-Repository als Actions-Secrets hinterlegt. Für Worker und GitHub Action fehlt ein eigener Vault-Lesetoken; für die Action fehlt ein D1-Schreibtoken.
+- **Auswirkung:** Die geschützte Worker-Adresse ist erreichbar, liefert aber ohne Vault-Lesetoken und befüllten Index noch keine Zettel.
+- **Frage:** Einen auf `VAULTS` und Repository-Contents-Lesen beschränkten GitHub-Token als Worker-Secret `GITHUB_TOKEN` und Actions-Secret `VAULTS_READ_TOKEN` hinterlegen; außerdem einen Cloudflare-D1-Schreibtoken als Actions-Secret `CLOUDFLARE_D1_TOKEN` hinterlegen. Danach Import und iPhone-Test durchführen. Keine Tokens im Chat oder Repository speichern.
+- **Entscheidung vom 3. Oktober 2026:** Cloudflare-Account, `workers.dev`, Zero Trust Free und die allein zugelassene E-Mail sind festgelegt. Die Access-Policy erlaubt nur diese E-Mail und gilt für gesamten Worker-Traffic.
 
 ### Cloudflare MVP: Vault-Klassifikation
 
