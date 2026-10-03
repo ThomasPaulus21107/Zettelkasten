@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f7f6f2">
+  <title>Zettelkasten</title>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="app">
+    <header class="topbar"><span class="mark">Z</span><span>Zettelkasten</span><span class="private">Privat</span></header>
+    <main>
+      <section class="search-view" id="search-view">
+        <h1>Zettel finden</h1>
+        <p class="intro">Suche in Titeln und Inhalten deiner Vaults.</p>
+        <label for="query">Suche</label>
+        <div class="search-box"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.3"/><path d="m16 16 5 5"/></svg><input id="query" type="search" placeholder="Begriff oder Thema" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
+        <p id="status" class="status" role="status">Bereit.</p>
+        <div id="results" class="results" aria-live="polite"></div>
+      </section>
+      <article id="reader" class="reader" hidden>
+        <button id="back" class="back" type="button">← Zur Suche</button>
+        <div class="note-meta" id="note-meta"></div>
+        <h1 id="note-title"></h1>
+        <div class="actions"><button id="share-pdf" type="button">PDF über Drucken</button><button id="share-md" type="button">Markdown teilen</button></div>
+        <div id="note-body" class="note-body"></div>
+        <p id="note-path" class="note-path"></p>
+      </article>
+    </main>
+    <footer id="source">Quelle wird geprüft …</footer>
+  </div>
+</body>
+</html>
