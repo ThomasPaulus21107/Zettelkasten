@@ -16,9 +16,14 @@ async function api(path, signal) {
   return data;
 }
 function showSearch() { reader.hidden = true; searchView.hidden = false; activeNote = null; history.replaceState(null, '', '/'); query.focus(); }
+function draftBadge() { const badge = document.createElement('span'); badge.className = 'draft-badge'; badge.textContent = 'Draft'; return badge; }
 function resultButton(note) {
   const button = document.createElement('button'); button.type = 'button'; button.className = 'result';
-  for (const [className, value] of [['result-vault', note.vault], ['result-title', note.title], ['result-excerpt', note.excerpt || note.path]]) {
+  const topline = document.createElement('div'); topline.className = 'result-topline';
+  const vault = document.createElement('span'); vault.className = 'result-vault'; vault.textContent = note.vault; topline.append(vault);
+  if (note.status === 'draft') topline.append(draftBadge());
+  button.append(topline);
+  for (const [className, value] of [['result-title', note.title], ['result-excerpt', note.excerpt || note.path]]) {
     const item = document.createElement(className === 'result-title' ? 'h2' : 'p'); item.className = className; item.textContent = value; button.append(item);
   }
   button.addEventListener('click', () => showNote(note.id)); return button;
@@ -54,7 +59,8 @@ async function showNote(id) {
   try {
     const data = await api(`/api/note?id=${encodeURIComponent(id)}`);
     activeNote = data; searchView.hidden = true; reader.hidden = false;
-    document.querySelector('#note-meta').textContent = data.vault;
+    const meta = document.querySelector('#note-meta'); meta.replaceChildren(document.createTextNode(data.vault));
+    if (data.status === 'draft') meta.append(draftBadge());
     document.querySelector('#note-title').textContent = data.title;
     document.querySelector('#note-body').replaceChildren(renderMarkdown(data.body));
     document.querySelector('#note-path').textContent = data.path;

@@ -28,7 +28,7 @@ export async function handleRequest(request, env, ctx) {
       if (!query) return json({ results: [], source: null });
       const source = await verifiedSource(env);
       const rows = await env.DB.prepare(`
-        SELECT n.id, n.vault, n.title, n.path,
+        SELECT n.id, n.vault, n.title, n.path, n.status,
           snippet(note_search, 4, '', '', ' … ', 16) AS excerpt
         FROM note_search JOIN notes n
           ON n.source_commit = note_search.source_commit AND n.id = note_search.id
@@ -43,7 +43,7 @@ export async function handleRequest(request, env, ctx) {
       if (!id || id.length > 512) return json({ error: 'Ungültige Zettelkennung.' }, 400);
       const source = await verifiedSource(env);
       const note = await env.DB.prepare(`
-        SELECT id, vault, path, title, aliases, markdown FROM notes
+        SELECT id, vault, path, title, status, source_status, aliases, markdown FROM notes
         WHERE source_commit = ? AND id = ?
       `).bind(source.revision, id).first();
       if (!note) return json({ error: 'Zettel nicht gefunden.' }, 404);

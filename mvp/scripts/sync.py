@@ -47,7 +47,7 @@ def include_path(path):
     parts = PurePosixPath(path).parts
     if len(parts) < 2 or parts[0] not in ('SX', 'DX') or not path.lower().endswith('.md'):
         return False
-    blocked = {'archive', 'archiv', 'archives', 'backup', 'backups', '.obsidian', '.git', '_inbox', '_drafts', 'drafts', '_proposals', 'logs', 'log', 'templates', 'system'}
+    blocked = {'archive', 'archiv', 'archives', 'backup', 'backups', '.obsidian', '.git', '_drafts', 'drafts', '_proposals', 'logs', 'log', 'templates', 'system'}
     if any(p.lower() in blocked or p.startswith('.') for p in parts[:-1]):
         return False
     name = parts[-1].lower()
@@ -77,6 +77,16 @@ def split_frontmatter(markdown):
     return metadata, markdown[match.end():]
 
 
+def note_status(path, metadata):
+    source_status = str(metadata.get('status') or '').strip().casefold()
+    if source_status in {'archived', 'archive', 'archiviert'}:
+        return None, source_status
+    in_inbox = '_inbox' in (part.casefold() for part in PurePosixPath(path).parts)
+    if in_inbox or source_status in {'draft', 'entwurf'}:
+        return 'draft', source_status
+    return source_status or 'unspecified', source_status
+
+
 def parse_archive(archive, revision):
     notes = []
     excluded = 0
@@ -96,8 +106,8 @@ def parse_archive(archive, revision):
             markdown = bundle.extractfile(member).read().decode('utf-8-sig')
             metadata, body = split_frontmatter(markdown)
             malformed += bool(metadata.get('_malformed'))
-            status = str(metadata.get('status', '')).casefold()
-            if status in {'archived', 'archive', 'archiviert', 'draft', 'entwurf'}:
+            status, source_status = note_status(path, metadata)
+            if status is None:
                 excluded += 1
                 continue
             aliases = metadata.get('aliases') or []
@@ -108,7 +118,8 @@ def parse_archive(archive, revision):
             aliases = [str(alias) for alias in aliases if alias is not None]
             title = str(metadata.get('title') or PurePosixPath(path).stem)
             notes.append({'source_commit': revision, 'id': path, 'vault': parts[1], 'path': path,
-                          'title': title, 'aliases': json.dumps(aliases, ensure_ascii=False),
+                          'title': title, 'status': status, 'source_status': source_status,
+                          'aliases': json.dumps(aliases, ensure_ascii=False),
                           'markdown': markdown, 'body': body})
     if len(notes) < 1000 or len({note['id'] for note in notes}) != len(notes):
         raise ValueError(f'Unexpected note count or duplicate paths: {len(notes)}')
@@ -138,7 +149,7 @@ def publish(notes, excluded, malformed, revision):
     if current and current[0]['source_commit'] == revision:
         print(f'Index already current: {revision[:12]}')
         return
-    note_columns = ('source_commit', 'id', 'vault', 'path', 'title', 'aliases', 'markdown')
+    note_columns = ('source_commit', 'id', 'vault', 'path', 'title', 'status', 'source_status', 'aliases', 'markdown')
     search_columns = ('source_commit', 'id', 'title', 'aliases', 'body')
     insert_many('notes', note_columns, notes)
     insert_many('note_search', search_columns, notes)

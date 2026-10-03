@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS notes (
   vault TEXT NOT NULL,
   path TEXT NOT NULL,
   title TEXT NOT NULL,
+  status TEXT NOT NULL,
+  source_status TEXT NOT NULL,
   aliases TEXT NOT NULL,
   markdown TEXT NOT NULL,
   PRIMARY KEY (source_commit, id)

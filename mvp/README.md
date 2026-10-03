@@ -4,7 +4,7 @@ Private, read-only iPhone web app for searching titles and note bodies in `Thoma
 
 ## Scope
 
-- Search titles, aliases and body text in `SX` and `DX`; open a note with its source path and revision.
+- Search titles, aliases and body text in `SX` and `DX`, including `_inbox`; open a note with its source path and revision. Inbox results and detail views show a `Draft` badge derived from the path.
 - Share the original Markdown file through the iPhone share sheet, or open the print flow to save/share a PDF.
 - Worker-level Cloudflare Access plus an explicit email allowlist. All routes, including HTML, CSS and JavaScript, require authentication.
 - Each search or note read checks the current GitHub branch SHA. An unavailable GitHub API or an outdated D1 index returns HTTP 503.
@@ -22,9 +22,9 @@ The browser renders Markdown as safe text blocks. Rich Obsidian features, graphs
 6. Run the sync once manually with `python mvp/scripts/sync.py --dry-run`. Review the included/excluded counts and paths against the actual Vault before the first publication. Then run the `Sync Cloudflare reader` workflow manually. Scheduled sync works after this branch reaches the default branch.
 7. Check search, reading, Markdown sharing and PDF print/share on an iPhone. Confirm that changing the Vault makes reads return 503 until sync completes.
 
-The latest read-only audit on Vault revision `ad12eeb54e2b` found 1,841 included notes, 488 path exclusions inside SX/DX, and two malformed YAML frontmatters handled by a counted fallback. A previous snapshot's raw Markdown total was about 3.3 MB; D1's final stored size still needs measurement after import.
+The latest read-only audit on Vault revision `ad12eeb54e2b` found 2,319 included notes, including 478 Inbox drafts (338 SX, 140 DX), and three malformed YAML frontmatters handled by a counted fallback. D1's final stored size still needs measurement after import.
 
-The owner confirmed that the inboxes are processed before publication. The 478 `_inbox` files remain outside the MVP search index until they become regular SX/DX notes. The other ten exclusions are system or control files. The two YAML fallbacks are regular notes with `rohling` status.
+The owner clarified that Inbox notes must be searchable while they are being processed. Their displayed `draft` status is derived from the `_inbox` path, independently of the source frontmatter status. The original Markdown is preserved for file sharing. System and control files remain excluded.
 
 If D1 or Access provisioning is not complete, the Worker denies access or reports the source unavailable. Do not disable either check to make the site appear ready.
 

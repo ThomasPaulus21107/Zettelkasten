@@ -67,10 +67,10 @@ Diese Liste sammelt Entscheidungen und Klärungsbedarfe, die nicht stillschweige
 ### Cloudflare MVP: Vault-Klassifikation
 
 - **Status:** entschieden und technisch geprüft für den ersten MVP-Import am 3. Oktober 2026
-- **Kontext:** Der Import nimmt Markdown unter `SX` und `DX` auf und schließt bekannte Archiv-, Entwurfs-, System- und Backup-Pfade aus. Der erneute Dry Run auf Revision `ad12eeb54e2b` ergab 1.841 aufgenommene Zettel, 488 nach Pfad ausgeschlossene SX/DX-Dateien (478 `_inbox`, zehn System-/Steuerdateien) und zwei Zettel mit fehlerhaftem YAML. Weitere 1.758 Markdown-Dateien liegen außerhalb von SX/DX.
-- **Auswirkung:** Der erste Index enthält reguläre Zettel und lässt unverarbeitete Inboxen und Steuerdateien aus.
-- **Entscheidung vom 3. Oktober 2026:** Die Inboxen werden vorab verarbeitet. Unverarbeitete `_inbox`-Dateien erscheinen nicht im MVP-Suchindex; verarbeitete Zettel werden an ihrem regulären SX-/DX-Pfad erfasst.
-- **Technische Prüfung:** `AGENTS.md`, Templates, `index.md`, `log.md` und eine datierte Protokolldatei sind ausgeschlossen. Ein regulärer Zettel mit führenden Punkten im Dateinamen wird aufgenommen. Die zwei YAML-Fallbacks haben den Status `rohling` und bleiben als Zettel im Index.
+- **Kontext:** Der Import nimmt Markdown unter `SX` und `DX` einschließlich `_inbox` auf und schließt Archiv-, System- und Backup-Pfade aus. Der Dry Run auf Revision `ad12eeb54e2b` ergab 2.319 Zettel, darunter 478 Inbox-Zettel (338 SX, 140 DX), sowie drei YAML-Fallbacks.
+- **Auswirkung:** Inbox-Zettel sind suchbar und in Ergebnissen und Zettelansicht als `Draft` erkennbar.
+- **Entscheidung vom 3. Oktober 2026, korrigiert nach Nutzerklärung:** Die Inboxen werden vom Nutzer verarbeitet; bis dahin bleiben ihre Zettel im MVP-Suchindex. Der App-Status `draft` ergibt sich aus dem `_inbox`-Pfad, auch wenn das Vault-Frontmatter `rohling` oder `hypothese` enthält. Beim Teilen bleibt das Original-Markdown unverändert.
+- **Technische Prüfung:** `AGENTS.md`, Templates, `index.md`, `log.md` und eine datierte Protokolldatei sind ausgeschlossen. Ein regulärer Zettel mit führenden Punkten im Dateinamen wird aufgenommen. Die Importprüfung fand 2.319 Zettel und genau 478 als `draft` gekennzeichnete Inbox-Zettel.
 
 ### Unterstützte Node-Version
 
