@@ -67,7 +67,7 @@ Diese Liste sammelt Entscheidungen und Klärungsbedarfe, die nicht stillschweige
 ### Cloudflare MVP: Vault-Klassifikation
 
 - **Status:** offen, vor dem ersten produktiven Import prüfen
-- **Kontext:** Der Import nimmt Markdown unter `SX` und `DX` auf und schließt bekannte Archiv-, Entwurfs-, System- und Backup-Pfade aus. Ein Dry Run auf Revision `83d9946cfeac` ergab 1.845 aufgenommene Zettel (1.316 SX, 529 DX), 484 nach Pfad ausgeschlossene SX/DX-Dateien und zwei Zettel mit fehlerhaftem YAML, für die ein markierter Fallback verwendet wird. Insgesamt liegen weitere 1.758 Markdown-Dateien außerhalb von SX/DX.
+- **Kontext:** Der Import nimmt Markdown unter `SX` und `DX` auf und schließt bekannte Archiv-, Entwurfs-, System- und Backup-Pfade aus. Ein Dry Run auf Revision `83d9946cfeac` ergab 1.845 aufgenommene Zettel (1.316 SX, 529 DX), 484 nach Pfad ausgeschlossene SX/DX-Dateien (478 `_inbox`, sechs System-/Steuerdateien) und zwei Zettel mit fehlerhaftem YAML, für die ein markierter Fallback verwendet wird. Insgesamt liegen weitere 1.758 Markdown-Dateien außerhalb von SX/DX.
 - **Auswirkung:** Die erste Indexversion kann sonst Nicht-Zettel enthalten oder aktive Zettel auslassen.
 - **Frage:** Stimmen die Ausschlüsse und die gezählte Menge nach einem Dry Run am echten Vault? Falls nicht, welche Pfad-/Statuskonventionen müssen angepasst werden?
 
