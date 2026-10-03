@@ -55,6 +55,22 @@ Diese Liste sammelt Entscheidungen und Klärungsbedarfe, die nicht stillschweige
 
 ## Technik und Betrieb
 
+### Cloudflare MVP: Zugang und erste Datenfreigabe
+
+- **Status:** teilweise entschieden; Vault-Zugang und automatischer D1-Abgleich fehlen
+- **Kontext:** Der Nutzer hat Cloudflare-Account `14c320ab61d87526996099d7d0e175d2` und die allein zugelassene E-Mail `thomaspaulus@me.com` genannt. `workers.dev` ist für den MVP vorgesehen. D1 `zettelkasten-reader` (`d95be413-7120-4b2c-9b93-6cf4e599ce18`) und die drei Schematabellen sind am 3. Oktober 2026 erstellt. Zero Trust Free ist aktiv. Der Worker ist unter `zettelkasten-reader.thomaspaulus.workers.dev` deployt und seine D1-Bindung gesetzt. Worker-Level Access schützt gesamten Traffic und Vorschau-URLs mit der Ein-E-Mail-Policy `Zettelkasten Reader – Thomas`; anonyme Aufrufe von `/`, `/app.js` und `/api/search` werden zum Login umgeleitet. `CLOUDFLARE_ACCOUNT_ID` und `CLOUDFLARE_D1_DATABASE_ID` sind im App-Repository als Actions-Secrets hinterlegt. Für Worker und GitHub Action fehlt ein eigener Vault-Lesetoken; für die Action fehlt ein D1-Schreibtoken.
+- **Auswirkung:** Die geschützte Worker-Adresse ist erreichbar, liefert aber ohne Vault-Lesetoken und befüllten Index noch keine Zettel.
+- **Frage:** Einen auf `VAULTS` und Repository-Contents-Lesen beschränkten GitHub-Token als Worker-Secret `GITHUB_TOKEN` und Actions-Secret `VAULTS_READ_TOKEN` hinterlegen; außerdem einen Cloudflare-D1-Schreibtoken als Actions-Secret `CLOUDFLARE_D1_TOKEN` hinterlegen. Danach Import und iPhone-Test durchführen. Keine Tokens im Chat oder Repository speichern.
+- **Entscheidung vom 3. Oktober 2026:** Cloudflare-Account, `workers.dev`, Zero Trust Free und die allein zugelassene E-Mail sind festgelegt. Die Access-Policy erlaubt nur diese E-Mail und gilt für gesamten Worker-Traffic.
+
+### Cloudflare MVP: Vault-Klassifikation
+
+- **Status:** entschieden und technisch geprüft für den ersten MVP-Import am 3. Oktober 2026
+- **Kontext:** Der Import nimmt Markdown unter `SX` und `DX` einschließlich `_inbox` auf und schließt Archiv-, System- und Backup-Pfade aus. Der Dry Run auf Revision `ad12eeb54e2b` ergab 2.319 Zettel, darunter 478 Inbox-Zettel (338 SX, 140 DX), sowie drei YAML-Fallbacks.
+- **Auswirkung:** Inbox-Zettel sind suchbar und in Ergebnissen und Zettelansicht als `Draft` erkennbar.
+- **Entscheidung vom 3. Oktober 2026, korrigiert nach Nutzerklärung:** Die Inboxen werden vom Nutzer verarbeitet; bis dahin bleiben ihre Zettel im MVP-Suchindex. Der App-Status `draft` ergibt sich aus dem `_inbox`-Pfad, auch wenn das Vault-Frontmatter `rohling` oder `hypothese` enthält. Beim Teilen bleibt das Original-Markdown unverändert.
+- **Technische Prüfung:** `AGENTS.md`, Templates, `index.md`, `log.md` und eine datierte Protokolldatei sind ausgeschlossen. Ein regulärer Zettel mit führenden Punkten im Dateinamen wird aufgenommen. Die Importprüfung fand 2.319 Zettel und genau 478 als `draft` gekennzeichnete Inbox-Zettel.
+
 ### Unterstützte Node-Version
 
 - **Status:** entschieden am 30. September 2026

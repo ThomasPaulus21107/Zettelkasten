@@ -1,0 +1,14 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "zettelkasten-reader",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-03",
+  "workers_dev": true,
+  "d1_databases": [{ "binding": "DB", "database_name": "zettelkasten-reader", "database_id": "REPLACE_WITH_D1_DATABASE_ID" }],
+  "vars": {
+    "GITHUB_OWNER": "ThomasPaulus21107",
+    "GITHUB_REPO": "VAULTS",
+    "GITHUB_BRANCH": "main",
+    "ALLOWED_EMAILS": "REPLACE_WITH_YOUR_EMAIL"
+  }
+}
