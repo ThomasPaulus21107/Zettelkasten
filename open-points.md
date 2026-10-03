@@ -59,10 +59,11 @@ Diese Liste sammelt Entscheidungen und Klärungsbedarfe, die nicht stillschweige
 
 ### Cloudflare MVP: Zugang und erste Datenfreigabe
 
-- **Status:** offen, blockiert den echten Deploy
-- **Kontext:** Der private Reader ist lokal implementiert. `VAULTS` ist nach aktueller GitHub-Prüfung privat und verwendet `main`. Der lokale GitHub-Zugang erlaubt einen Dry Run. Für Cloudflare Worker, D1 und Access fehlen aktuell nutzbare Zugangsdaten; für die spätere GitHub Action muss ein eigener Vault-Lesetoken als Secret eingerichtet werden.
-- **Auswirkung:** Ohne Cloudflare-Zugang und Access-Freigabe kann keine private Instanz veröffentlicht werden.
-- **Frage:** Welcher Cloudflare-Account und welche Domain/Route sollen genutzt werden, und welche E-Mail darf Access zulassen? Bitte Zugang über die jeweiligen sicheren Login-/Secret-Wege bereitstellen, nicht als Token im Chat.
+- **Status:** teilweise entschieden; Zero Trust und Vault-Sync blockieren den echten Deploy
+- **Kontext:** Der Nutzer hat Cloudflare-Account `14c320ab61d87526996099d7d0e175d2` und die allein zugelassene E-Mail `thomaspaulus@me.com` genannt. `workers.dev` ist für den MVP vorgesehen. D1 `zettelkasten-reader` (`d95be413-7120-4b2c-9b93-6cf4e599ce18`) und die drei Schematabellen sind am 3. Oktober 2026 erstellt. Cloudflare Zero Trust ist im Account noch nicht aktiviert; die Free-Plan-Auswahl im Dashboard führte bei der Prüfung nicht zum nächsten Schritt. Die lokale GitHub-CLI-Anmeldung ist aktuell ungültig. Für Worker und GitHub Action fehlt ein eigener Vault-Lesetoken als Secret.
+- **Auswirkung:** Ohne aktive Access-Policy und Vault-Sync kann keine private, aktuelle Zettelansicht veröffentlicht werden.
+- **Frage:** Zero Trust Free im Cloudflare-Konto abschließen und Access nur für `thomaspaulus@me.com` aktivieren; anschließend einen auf `VAULTS` beschränkten Lesetoken über sichere Secret-Eingaben bereitstellen. Keine Tokens im Chat oder Repository speichern.
+- **Entscheidung vom 3. Oktober 2026:** Cloudflare-Account, `workers.dev` und die allein zugelassene E-Mail sind festgelegt.
 
 ### Cloudflare MVP: Vault-Klassifikation
 
